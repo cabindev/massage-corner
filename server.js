@@ -30,15 +30,11 @@ app.prepare().then(() => {
         }
     }));
     
-    // ✅ ตั้งค่าเสิร์ฟไฟล์ static สำหรับ videos
+    // ตั้งค่าเสิร์ฟไฟล์วิดีโอ
     server.use('/videos', express.static(path.join(__dirname, 'public/videos'), {
-        maxAge: dev ? 0 : '7d',
-        etag: true
-    }));
-    
-    // ✅ ตั้งค่าเสิร์ฟไฟล์ static อื่นๆ (logo, svg icons)
-    server.use(express.static(path.join(__dirname, 'public'), {
-        maxAge: dev ? 0 : '1d'
+        maxAge: dev ? 0 : '1d',
+        etag: true,
+        lastModified: true,
     }));
 
     // ✅ Middleware สำหรับ log requests (เฉพาะ development)
