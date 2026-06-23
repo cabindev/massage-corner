@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════════════════════
+   Massage Corner Sofia — Premium palette "Emerald & Champagne"
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --cream: #f7f3ec; /* alabaster */
+  --bark: #1a2420; /* ink */
+  --onyx: #0b1714; /* darkest emerald-black */
+}
+
+@theme inline {
+  /* พื้นหลัง / กระดาษ (alabaster) */
+  --color-cream: #f7f3ec;
+  --color-cream-50: #fbf9f3;
+  --color-cream-100: #efe9dd;
+
+  /* เขียวมรกต (สีหลัก) — แมปบนชื่อ leaf-* เดิม */
+  --color-leaf-50: #e8efea;
+  --color-leaf-100: #d3e0d8;
+  --color-leaf-200: #a7c2b2;
+  --color-leaf-300: #6e9580;
+  --color-leaf-400: #3e6b57;
+  --color-leaf-500: #245040;
+  --color-leaf-600: #163a2e;
+  --color-leaf-700: #102b22;
+  --color-leaf-800: #0e1c18;
+
+  /* ดำมรกต (onyx) สำหรับ section เข้มสุด */
+  --color-onyx: #0b1714;
+
+  /* ทองแชมเปญ (accent) */
+  --color-gold-50: #f5eedf;
+  --color-gold-100: #eadfc6;
+  --color-gold-200: #e3cda0;
+  --color-gold-300: #d6ba88;
+  --color-gold-400: #d0b27b;
+  --color-gold-500: #c9a86a;
+  --color-gold-600: #b8965a;
+  --color-gold-700: #9c7e47;
+  --color-gold: #c9a86a;
+
+  /* ตัวอักษร */
+  --color-bark: #1a2420;
+
+  /* ฟอนต์: เนื้อหา = Inter, หัวเรื่องหรู = Cormorant Garamond */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--bark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* การเลือกข้อความให้เป็นโทนทอง */
+::selection {
+  background: #c9a86a;
+  color: #0b1714;
+}
+
+/* ระยะห่างตัวอักษรกว้างพิเศษ สำหรับ label ตัวเล็ก (small caps) */
+.tracking-widest-2 {
+  letter-spacing: 0.28em;
+}
+
+/* numeral แบบ serif สำหรับราคา/ตัวเลข section */
+.numeral {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums;
+  letter-spacing: 0.01em;
+}
+
+/* เส้นขีดทองนำหน้า eyebrow */
+.rule-gold::before {
+  content: "";
+  display: inline-block;
+  width: 2rem;
+  height: 1px;
+  background: currentColor;
+  vertical-align: middle;
+  margin-right: 0.75rem;
+  opacity: 0.6;
+}

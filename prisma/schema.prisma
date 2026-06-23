@@ -1,0 +1,103 @@
+// Prisma schema สำหรับเว็บไซต์ร้านนวด (Massage Shop)
+// เอกสาร: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // ใช้ MySQL (MAMP) — เปลี่ยนเป็น "postgresql" หรือ "sqlite" ได้
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+/// สถานะการจอง
+enum BookingStatus {
+  PENDING // รอยืนยัน
+  CONFIRMED // ยืนยันแล้ว
+  REJECTED // ปฏิเสธ (แอดมินไม่รับงาน)
+  COMPLETED // ปิดงาน (ให้บริการเสร็จแล้ว)
+  CANCELLED // ยกเลิก (ลูกค้ายกเลิก)
+}
+
+/// สิทธิ์ผู้ใช้งานระบบหลังบ้าน
+enum Role {
+  ADMIN
+  STAFF
+}
+
+// ─────────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────────
+
+/// บริการนวด เช่น นวดไทย, นวดน้ำมัน ฯลฯ
+model Service {
+  id              String    @id @default(cuid())
+  name            String // ชื่อบริการ (อังกฤษ)
+  nameBg          String? // ชื่อบริการ (บัลแกเรีย)
+  description     String? // คำอธิบาย (อังกฤษ)
+  descriptionBg   String? // คำอธิบาย (บัลแกเรีย)
+  price           Decimal   @db.Decimal(10, 2) // ราคาหลัก (EUR) — ใช้ตอนจอง
+  priceTiers      Json? // ช่วงราคาหลายแบบสำหรับ price list เช่น [{"minutes":60,"price":55}, ...]
+  durationMinutes Int // ระยะเวลาเป็นนาที
+  imageUrl        String? // รูปภาพ
+  isActive        Boolean   @default(true) // แสดงบนหน้าเว็บหรือไม่
+  bookings        Booking[] // ความสัมพันธ์: 1 บริการมีได้หลายการจอง
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+/// หมอนวด / นักบำบัด — 1 คนรับได้ 1 คิวต่อช่วงเวลา (ใช้คำนวณ capacity)
+model Therapist {
+  id        String    @id @default(cuid())
+  name      String // ชื่อหมอนวด
+  bio       String? // ประวัติ/ความถนัดสั้น ๆ
+  imageUrl  String? // รูปภาพ
+  isActive  Boolean   @default(true) // ยังรับงานอยู่หรือไม่ (นับเป็น capacity เฉพาะที่ active)
+  bookings  Booking[] // ความสัมพันธ์: 1 หมอมีได้หลายการจอง
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+/// การจองคิวนวดของลูกค้า
+model Booking {
+  id           String        @id @default(cuid()) // รหัสการจอง
+  customerName String // ชื่อลูกค้า
+  phone        String // เบอร์โทร
+  bookingTime  DateTime // วันเวลาที่เริ่มจอง
+  endTime      DateTime // เวลาสิ้นสุด = bookingTime + ระยะเวลาบริการ (ใช้เช็กคิวชนกัน)
+  status       BookingStatus @default(PENDING) // สถานะการจอง
+  notes        String? // หมายเหตุเพิ่มเติม (ถ้ามี)
+
+  // ความสัมพันธ์กับ Service (การจอง 1 รายการผูกกับ 1 บริการ)
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  // หมอนวดที่ถูกจัดให้ (แอดมินกำหนดทีหลัง — ตอนลูกค้าจองยังว่างได้)
+  therapistId String?
+  therapist   Therapist? @relation(fields: [therapistId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId])
+  @@index([therapistId])
+  @@index([bookingTime])
+  @@index([endTime])
+  @@index([status])
+}
+
+/// ผู้ใช้งานระบบหลังบ้าน (Admin / Staff)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique // อีเมล (ใช้ล็อกอิน)
+  password  String // รหัสผ่าน (ต้อง hash ก่อนบันทึกเสมอ เช่น bcrypt)
+  name      String? // ชื่อที่แสดง
+  role      Role     @default(ADMIN) // สิทธิ์การใช้งาน
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
