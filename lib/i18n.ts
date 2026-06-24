@@ -22,6 +22,24 @@ export const dict = {
     hero_book: "Book a Session",
     hero_explore: "Explore Services",
 
+    zen_label: "Zen Experience",
+    zen_title: "Where Thai Heritage Meets Quiet Luxury",
+    zen_sub:
+      "Every detail is curated to feel grounded, refined, and deeply restorative, from the sensory atmosphere to the pacing of each treatment.",
+    zen_1_title: "Earth-Toned Serenity",
+    zen_1_text:
+      "Natural textures, warm neutrals, and soft gold accents create a calm visual rhythm inspired by Thai spa rituals.",
+    zen_2_title: "Intentional Therapies",
+    zen_2_text:
+      "Each massage experience is designed around balance, helping ease tension while restoring clarity and physical comfort.",
+    zen_3_title: "Modern Minimalism",
+    zen_3_text:
+      "Clean spacing, elegant hierarchy, and understated luxury make the experience easy to navigate and beautiful to explore.",
+    zen_years_num: "10+",
+    zen_years_label: "Years Experience",
+    zen_img_1_alt: "Traditional Thai therapist applying hot herbal compress",
+    zen_img_2_alt: "Close-up of therapist's oiled hands during treatment",
+
     serv_label: "Our Services",
     serv_title: "Treatments Designed for You",
     serv_sub:
@@ -50,7 +68,9 @@ export const dict = {
     about_p1:
       "Welcome to Massage Corner — a serene haven of Thai healing arts located in the heart of Sofia. Our skilled therapists bring the ancient wisdom of traditional Thai medicine to every treatment.",
     about_p2:
-      "We combine time-honored techniques with a warm, welcoming atmosphere to give you a truly restorative experience.",
+      "We combine time-honored techniques with a warm, welcoming atmosphere to give you a truly restorative experience. Whether you seek relief from chronic pain, deep relaxation, or simply a moment of calm, our team is here for you.",
+    about_quote:
+      "A luxury wellness space should never feel overwhelming. It should feel still, grounded, and deeply cared for.",
     feat_certified: "Certified Thai Therapists",
     feat_oils: "Natural Oils & Herbs",
     feat_calm: "Calm & Serene Space",
@@ -121,6 +141,24 @@ export const dict = {
     hero_book: "Резервирай час",
     hero_explore: "Виж услугите",
 
+    zen_label: "Дзен изживяване",
+    zen_title: "Където тайландското наследство среща тихия лукс",
+    zen_sub:
+      "Всеки детайл е подбран така, че да усетите спокойствие, изтънченост и дълбоко възстановяване — от сетивната атмосфера до ритъма на всяка процедура.",
+    zen_1_title: "Земни тонове и спокойствие",
+    zen_1_text:
+      "Естествени текстури, топли неутрални тонове и меки златни акценти създават спокоен визуален ритъм, вдъхновен от тайландските спа ритуали.",
+    zen_2_title: "Осъзнати терапии",
+    zen_2_text:
+      "Всяко масажно изживяване е създадено около баланса, помагайки да облекчи напрежението, докато възстановява яснотата и физическия комфорт.",
+    zen_3_title: "Модерен минимализъм",
+    zen_3_text:
+      "Чисти пространства, елегантна йерархия и ненатрапчив лукс правят изживяването лесно за разглеждане и красиво за откриване.",
+    zen_years_num: "10+",
+    zen_years_label: "Години опит",
+    zen_img_1_alt: "Тайландски терапевт прилага гореща билкова компресия",
+    zen_img_2_alt: "Близък план на ръцете на терапевта по време на процедура",
+
     serv_label: "Нашите услуги",
     serv_title: "Процедури, създадени за вас",
     serv_sub:
@@ -149,7 +187,9 @@ export const dict = {
     about_p1:
       "Добре дошли в Massage Corner — спокойно убежище на тайландското изкуство на лечение, намиращо се в сърцето на София. Нашите опитни терапевти внасят древната мъдрост на традиционната тайландска медицина във всяка процедура.",
     about_p2:
-      "Съчетаваме изпитани техники с топла, приветлива атмосфера, за да ви осигурим наистина възстановяващо преживяване.",
+      "Съчетаваме изпитани техники с топла, приветлива атмосфера, за да ви осигурим наистина възстановяващо преживяване. Независимо дали търсите облекчение от хронична болка, дълбока релаксация или просто миг на спокойствие, нашият екип е тук за вас.",
+    about_quote:
+      "Луксозното уелнес пространство никога не бива да изглежда претоварващо. То трябва да усеща спокойствие, заземяване и дълбока грижа.",
     feat_certified: "Сертифицирани терапевти",
     feat_oils: "Натурални масла и билки",
     feat_calm: "Спокойна и уютна обстановка",

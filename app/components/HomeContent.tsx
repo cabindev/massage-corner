@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -63,6 +64,42 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
     t("feat_calm"),
     t("feat_flexible"),
   ];
+
+  const zenCards = [
+    { n: "01", title: t("zen_1_title"), text: t("zen_1_text") },
+    { n: "02", title: t("zen_2_title"), text: t("zen_2_text") },
+    { n: "03", title: t("zen_3_title"), text: t("zen_3_text") },
+  ];
+
+  // ── Lightbox (คลิกรูปใน gallery เพื่อเปิดเต็มจอ) ──
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const closeLightbox = useCallback(() => setLightbox(null), []);
+  const showPrev = useCallback(
+    () =>
+      setLightbox((i) =>
+        i === null ? i : (i + GALLERY.length - 1) % GALLERY.length,
+      ),
+    [],
+  );
+  const showNext = useCallback(
+    () => setLightbox((i) => (i === null ? i : (i + 1) % GALLERY.length)),
+    [],
+  );
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowLeft") showPrev();
+      else if (e.key === "ArrowRight") showNext();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [lightbox, closeLightbox, showPrev, showNext]);
 
   return (
     <>
@@ -129,13 +166,149 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
           </div>
         </div>
 
+        {/* ═══ ZEN EXPERIENCE ═══ */}
+        <section className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24 sm:py-28">
+          <div className="mx-auto max-w-2xl text-center">
+            <Eyebrow>{t("zen_label")}</Eyebrow>
+            <h2 className="mt-4 font-display text-4xl font-light leading-tight text-leaf-700 sm:text-5xl">
+              {t("zen_title")}
+            </h2>
+            <p className="mt-5 leading-relaxed text-bark/60">{t("zen_sub")}</p>
+          </div>
+
+          <div className="mt-16 grid gap-7 md:grid-cols-3">
+            {zenCards.map((card) => (
+              <article
+                key={card.n}
+                className="group relative flex flex-col rounded-[20px] bg-cream-50 p-8 ring-1 ring-gold/15 transition duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-leaf-800/10 hover:ring-gold/40"
+              >
+                <span className="numeral text-3xl text-gold-500/80">
+                  {card.n}
+                </span>
+                <h3 className="mt-5 font-display text-2xl font-medium text-leaf-700">
+                  {card.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-bark/55">
+                  {card.text}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══ VIDEO ═══ */}
+        <section
+          id="video"
+          className="scroll-mt-24 border-y border-gold/15 bg-cream-50"
+        >
+          <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+            <div className="flex flex-col items-center text-center">
+              <SectionNumber n="01" />
+              <div className="mt-4">
+                <Eyebrow>{t("video_label")}</Eyebrow>
+              </div>
+              <h2 className="mt-4 font-display text-4xl font-light text-leaf-700 sm:text-5xl">
+                {t("video_title")}
+              </h2>
+              <p className="mt-4 max-w-xl text-bark/55">{t("video_sub")}</p>
+            </div>
+
+            <div className="mt-12 grid gap-5 sm:grid-cols-2">
+              {["/videos/massage-1.mp4", "/videos/massage-2.mp4"].map((src) => (
+                <div
+                  key={src}
+                  className="overflow-hidden rounded-2xl bg-onyx ring-1 ring-gold/20"
+                >
+                  <video
+                    controls
+                    preload="metadata"
+                    playsInline
+                    className="aspect-video w-full bg-onyx"
+                  >
+                    <source src={src} type="video/mp4" />
+                  </video>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ ABOUT ═══ */}
+        <section id="about" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24 sm:py-28">
+          <div className="grid items-center gap-14 lg:grid-cols-2">
+            {/* overlapping image collage + years badge */}
+            <div className="relative mx-auto w-full max-w-md pb-8 pr-4 sm:pr-8">
+              {/* back image (larger, top-left) */}
+              <div className="relative aspect-[4/5] w-[74%] overflow-hidden rounded-[20px] ring-1 ring-gold/15">
+                <Image
+                  src="/images/services/hot-herbal-compress.jpg"
+                  alt={t("zen_img_1_alt")}
+                  fill
+                  sizes="(max-width: 1024px) 60vw, 30vw"
+                  className="object-cover transition duration-700 hover:scale-105"
+                />
+              </div>
+              {/* front image (smaller, overlapping bottom-right) */}
+              <div className="absolute -bottom-4 right-0 aspect-[4/5] w-[54%] overflow-hidden rounded-[20px] shadow-2xl shadow-onyx/25 ring-[6px] ring-cream">
+                <Image
+                  src="/images/services/oil-aromatherapy.jpg"
+                  alt={t("zen_img_2_alt")}
+                  fill
+                  sizes="(max-width: 1024px) 45vw, 25vw"
+                  className="object-cover transition duration-700 hover:scale-105"
+                />
+              </div>
+              {/* champagne years badge straddling the seam */}
+              <div className="absolute right-[18%] top-[30%] z-10 flex h-24 w-24 flex-col items-center justify-center rounded-full bg-gold-600 text-center shadow-xl shadow-onyx/30 ring-4 ring-cream sm:h-28 sm:w-28">
+                <span className="numeral text-3xl font-light text-cream-50 sm:text-4xl">
+                  {t("zen_years_num")}
+                </span>
+                <span className="mt-0.5 px-2 text-[9px] font-medium uppercase tracking-widest text-cream-50/85">
+                  {t("zen_years_label")}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <SectionNumber n="02" />
+              <div className="mt-4">
+                <Eyebrow>{t("about_label")}</Eyebrow>
+              </div>
+              <h2 className="mt-4 font-display text-4xl font-light leading-tight text-leaf-700 sm:text-5xl">
+                {t("about_title")}
+              </h2>
+              <p className="mt-5 leading-relaxed text-bark/60">{t("about_p1")}</p>
+              <p className="mt-3 leading-relaxed text-bark/60">{t("about_p2")}</p>
+
+              {/* quote */}
+              <figure className="mt-8 rounded-[20px] border-l-2 border-gold-500 bg-cream-50 p-6 ring-1 ring-gold/15">
+                <blockquote className="font-display text-lg italic leading-relaxed text-bark/70">
+                  <span className="mr-1 text-2xl text-gold-500">“</span>
+                  {t("about_quote")}
+                </blockquote>
+              </figure>
+
+              <ul className="mt-8 divide-y divide-gold/15 border-y border-gold/15">
+                {features.map((f) => (
+                  <li key={f} className="flex items-center gap-4 py-3.5">
+                    <span className="numeral text-gold-600">✦</span>
+                    <span className="text-sm font-medium tracking-wide text-bark/75">
+                      {f}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
         {/* ═══ SERVICES ═══ */}
         <section
           id="services"
           className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24 sm:py-28"
         >
           <div className="flex flex-col items-center text-center">
-            <SectionNumber n="01" />
+            <SectionNumber n="03" />
             <div className="mt-4">
               <Eyebrow>{t("serv_label")}</Eyebrow>
             </div>
@@ -207,7 +380,7 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
         >
           <div className="mx-auto max-w-5xl px-6 py-24 sm:py-28">
             <div className="flex flex-col items-center text-center">
-              <SectionNumber n="02" />
+              <SectionNumber n="04" />
               <div className="mt-4">
                 <Eyebrow>{t("price_label")}</Eyebrow>
               </div>
@@ -266,7 +439,7 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
         <section id="gallery" className="scroll-mt-0 bg-onyx">
           <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
             <div className="flex flex-col items-center text-center">
-              <SectionNumber n="03" tone="light" />
+              <SectionNumber n="05" tone="light" />
               <div className="mt-4">
                 <Eyebrow tone="light">{t("gal_label")}</Eyebrow>
               </div>
@@ -278,9 +451,12 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
 
             <div className="mt-16 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {GALLERY.map((src, i) => (
-                <div
+                <button
                   key={src}
-                  className={`group relative overflow-hidden rounded-lg ring-1 ring-cream-50/10 ${
+                  type="button"
+                  onClick={() => setLightbox(i)}
+                  aria-label={`${t("gal_title")} — ${i + 1}`}
+                  className={`group relative cursor-pointer overflow-hidden rounded-lg ring-1 ring-cream-50/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 ${
                     i % 5 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"
                   }`}
                 >
@@ -292,88 +468,8 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
                     className="object-cover transition duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-onyx/0 ring-0 ring-inset ring-gold-500/0 transition duration-500 group-hover:bg-onyx/10 group-hover:ring-1 group-hover:ring-gold-500/40" />
-                </div>
+                </button>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ VIDEO ═══ */}
-        <section
-          id="video"
-          className="scroll-mt-24 border-y border-gold/15 bg-cream-50"
-        >
-          <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
-            <div className="flex flex-col items-center text-center">
-              <SectionNumber n="04" />
-              <div className="mt-4">
-                <Eyebrow>{t("video_label")}</Eyebrow>
-              </div>
-              <h2 className="mt-4 font-display text-4xl font-light text-leaf-700 sm:text-5xl">
-                {t("video_title")}
-              </h2>
-              <p className="mt-4 max-w-xl text-bark/55">{t("video_sub")}</p>
-            </div>
-
-            <div className="mt-12 grid gap-5 sm:grid-cols-2">
-              {["/videos/massage-1.mp4", "/videos/massage-2.mp4"].map((src) => (
-                <div
-                  key={src}
-                  className="overflow-hidden rounded-2xl bg-onyx ring-1 ring-gold/20"
-                >
-                  <video
-                    controls
-                    preload="metadata"
-                    playsInline
-                    className="aspect-video w-full bg-onyx"
-                  >
-                    <source src={src} type="video/mp4" />
-                  </video>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ ABOUT ═══ */}
-        <section id="about" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24 sm:py-28">
-          <div className="grid items-center gap-14 lg:grid-cols-2">
-            <div className="relative">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[20px]">
-                <Image
-                  src="/images/services/traditional-thai.jpg"
-                  alt={t("about_title")}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-              {/* กรอบทองเหลื่อม */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -bottom-5 -right-5 -z-10 h-full w-full rounded-[20px] border border-gold-500/50"
-              />
-            </div>
-            <div>
-              <SectionNumber n="05" />
-              <div className="mt-4">
-                <Eyebrow>{t("about_label")}</Eyebrow>
-              </div>
-              <h2 className="mt-4 font-display text-4xl font-light leading-tight text-leaf-700 sm:text-5xl">
-                {t("about_title")}
-              </h2>
-              <p className="mt-5 leading-relaxed text-bark/60">{t("about_p1")}</p>
-              <p className="mt-3 leading-relaxed text-bark/60">{t("about_p2")}</p>
-              <ul className="mt-9 divide-y divide-gold/15 border-y border-gold/15">
-                {features.map((f) => (
-                  <li key={f} className="flex items-center gap-4 py-3.5">
-                    <span className="numeral text-gold-600">✦</span>
-                    <span className="text-sm font-medium tracking-wide text-bark/75">
-                      {f}
-                    </span>
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </section>
@@ -453,6 +549,72 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
           </div>
         </section>
       </main>
+
+      {/* ═══ LIGHTBOX ═══ */}
+      {lightbox !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={closeLightbox}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-onyx/95 p-4 backdrop-blur-sm sm:p-8"
+        >
+          {/* close */}
+          <button
+            type="button"
+            onClick={closeLightbox}
+            aria-label="Close"
+            className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full text-2xl text-cream-50/80 transition hover:bg-cream-50/10 hover:text-cream-50"
+          >
+            ✕
+          </button>
+
+          {/* prev */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              showPrev();
+            }}
+            aria-label="Previous"
+            className="absolute left-3 z-10 flex h-12 w-12 items-center justify-center rounded-full text-3xl text-cream-50/70 transition hover:bg-cream-50/10 hover:text-cream-50 sm:left-6"
+          >
+            ‹
+          </button>
+
+          {/* image */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative h-[78vh] w-full max-w-5xl"
+          >
+            <Image
+              src={GALLERY[lightbox]}
+              alt={`Massage Corner ${lightbox + 1}`}
+              fill
+              sizes="100vw"
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* next */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              showNext();
+            }}
+            aria-label="Next"
+            className="absolute right-3 z-10 flex h-12 w-12 items-center justify-center rounded-full text-3xl text-cream-50/70 transition hover:bg-cream-50/10 hover:text-cream-50 sm:right-6"
+          >
+            ›
+          </button>
+
+          {/* counter */}
+          <span className="numeral absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-widest text-cream-50/70">
+            {lightbox + 1} / {GALLERY.length}
+          </span>
+        </div>
+      )}
 
       <Footer />
     </>
