@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ServiceDTO } from "@/lib/services";
 import type { SlotInfo } from "@/lib/availability";
+import { isClosedDay } from "@/lib/schedule-config";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createBooking, getAvailability } from "./actions";
 
@@ -85,6 +86,7 @@ export default function BookingForm({
   }, [serviceId, date]);
 
   const hasAnyFree = slots.some((s) => s.available);
+  const closedDay = date ? isClosedDay(new Date(`${date}T00:00:00`)) : false;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -256,7 +258,10 @@ export default function BookingForm({
                 </option>
               ))}
             </select>
-            {date && !loadingSlots && slots.length > 0 && !hasAnyFree && (
+            {date && !loadingSlots && closedDay && (
+              <p className="mt-2 text-sm text-amber-600">{t("day_closed")}</p>
+            )}
+            {date && !loadingSlots && !closedDay && slots.length > 0 && !hasAnyFree && (
               <p className="mt-2 text-sm text-amber-600">{t("slot_all_full")}</p>
             )}
           </div>

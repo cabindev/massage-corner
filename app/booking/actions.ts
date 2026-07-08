@@ -7,6 +7,7 @@ import {
   getDayAvailability,
   type SlotInfo,
 } from "@/lib/availability";
+import { isClosedDay } from "@/lib/schedule-config";
 
 /** ข้อมูลที่ฟอร์มส่งเข้ามา */
 export type BookingInput = {
@@ -65,6 +66,12 @@ export async function createBooking(
   }
   if (startTime.getTime() < Date.now()) {
     return { ok: false, message: "You cannot book a time in the past." };
+  }
+  if (isClosedDay(startTime)) {
+    return {
+      ok: false,
+      message: "We're closed on Mondays. Please choose another day (Tue–Sun).",
+    };
   }
 
   try {

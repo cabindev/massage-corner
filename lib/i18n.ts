@@ -105,6 +105,7 @@ export const dict = {
     slot_pick: "Select time…",
     slot_full: "Full",
     slot_all_full: "All time slots are full today. Please pick another date.",
+    day_closed: "We're closed on Mondays. Please choose Tuesday–Sunday.",
 
     succ_title: "Booking Received!",
     succ_sub:
@@ -118,7 +119,7 @@ export const dict = {
     cont_address: "Address",
     cont_phone: "Phone",
     cont_hours: "Working Hours",
-    cont_hours_val: "Monday – Sunday: 10:00 – 21:00",
+    cont_hours_val: "Tuesday – Sunday: 10:30 – 19:00",
     address_val: "15 Srebarna Str., Sofia 1407, Bulgaria",
     rights: "All rights reserved.",
     nav_home: "Home",
@@ -224,6 +225,7 @@ export const dict = {
     slot_pick: "Изберете час…",
     slot_full: "Зает",
     slot_all_full: "Всички часове за днес са заети. Моля, изберете друга дата.",
+    day_closed: "Затворено сме в понеделник. Моля, изберете вторник – неделя.",
 
     succ_title: "Резервацията е получена!",
     succ_sub:
@@ -237,7 +239,7 @@ export const dict = {
     cont_address: "Адрес",
     cont_phone: "Телефон",
     cont_hours: "Работно време",
-    cont_hours_val: "Понеделник – Неделя: 10:00 – 21:00",
+    cont_hours_val: "Вторник – Неделя: 10:30 – 19:00",
     address_val: "ул. Сребърна 15, София 1407, България",
     rights: "Всички права запазени.",
     nav_home: "Начало",

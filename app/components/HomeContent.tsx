@@ -500,7 +500,7 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
               <div className="flex flex-col justify-center gap-8">
                 {[
                   { l: t("cont_address"), v: t("address_val"), href: undefined },
-                  { l: t("cont_phone"), v: "088 625 0786", href: "tel:0886250786" },
+                  { l: t("cont_phone"), v: "08 7604 7743", href: "tel:0876047743" },
                   { l: t("cont_hours"), v: t("cont_hours_val"), href: undefined },
                 ].map((row) => (
                   <div key={row.l} className="border-l border-gold-500/40 pl-5">

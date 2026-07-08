@@ -11,6 +11,7 @@ import {
   OPEN_MINUTES,
   CLOSE_MINUTES,
   SLOT_STEP_MINUTES,
+  isClosedDay,
 } from "@/lib/schedule-config";
 
 /** สถานะการจองที่ถือว่า "กินคิว" หมอ (ใช้คำนวณ capacity) */
@@ -59,6 +60,8 @@ export async function getDayAvailability(
     select: { durationMinutes: true, isActive: true },
   });
   if (!service || !service.isActive) return [];
+
+  if (isClosedDay(new Date(`${dateStr}T00:00:00`))) return [];
 
   const activeTherapists = await prisma.therapist.count({
     where: { isActive: true },

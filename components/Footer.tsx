@@ -29,10 +29,10 @@ export default function Footer() {
               {t("address_val")}
             </p>
             <a
-              href="tel:0886250786"
+              href="tel:0876047743"
               className="mt-2 block font-display text-lg text-cream-50 hover:text-gold-300"
             >
-              088 625 0786
+              08 7604 7743
             </a>
           </div>
 
