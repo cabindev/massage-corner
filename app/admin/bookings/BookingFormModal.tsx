@@ -132,7 +132,7 @@ export default function BookingFormModal({
           <h3 className="font-display text-xl font-medium text-leaf-700">
             {mode === "create" ? "New booking" : "Edit booking"}
           </h3>
-          <button type="button" onClick={onClose} className="text-bark/40 hover:text-bark" aria-label="Close">✕</button>
+          <button type="button" onClick={onClose} className="text-bark/52 hover:text-bark" aria-label="Close">✕</button>
         </div>
 
         <div className="mt-5 space-y-3">

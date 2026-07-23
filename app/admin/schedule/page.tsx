@@ -34,7 +34,7 @@ export default async function AdminSchedulePage() {
         <h1 className="font-display text-3xl font-medium text-leaf-700">
           Week schedule
         </h1>
-        <p className="mt-1 text-sm text-bark/55">
+        <p className="mt-1 text-sm text-bark/68">
           Weekly timeline by therapist. Drag to reschedule · double-click to edit.
         </p>
       </header>

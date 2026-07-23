@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -73,22 +74,18 @@ export default function AdminSidebar({ userName }: { userName?: string | null })
 
   return (
     <aside className="border-b border-leaf-100 bg-white md:flex md:min-h-screen md:w-64 md:flex-col md:border-b-0 md:border-r">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-leaf-100 text-leaf-700">
-          <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-            <path
-              d="M20 4C9 4 4 10 4 19m0 0c4-9 9-12 14-13"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
-        </span>
-        <div className="leading-tight">
-          <p className="font-semibold text-bark">Massage Corner Sofia</p>
-          <p className="text-xs text-bark/50">Admin Panel</p>
-        </div>
+      <div className="flex flex-col items-center gap-1 px-5 py-5">
+        <Link href="/" className="transition hover:opacity-80">
+          <Image
+            src="/logo.webp"
+            alt="Massage Corner Sofia — back to site"
+            width={1398}
+            height={995}
+            className="h-14 w-auto object-contain"
+            priority
+          />
+        </Link>
+        <p className="text-xs text-bark/62">Admin Panel</p>
       </div>
 
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:gap-1.5 md:pb-0">
@@ -115,7 +112,7 @@ export default function AdminSidebar({ userName }: { userName?: string | null })
 
       <div className="px-3 py-4 md:mt-auto">
         {userName && (
-          <p className="px-4 pb-2 text-xs text-bark/45">
+          <p className="px-4 pb-2 text-xs text-bark/58">
             Signed in as <span className="font-medium text-bark/70">{userName}</span>
           </p>
         )}

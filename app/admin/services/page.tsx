@@ -10,7 +10,7 @@ export default async function AdminServicesPage() {
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-bark">Services</h1>
-          <p className="mt-1 text-sm text-bark/55">
+          <p className="mt-1 text-sm text-bark/68">
             Treatments available for booking
           </p>
         </div>
@@ -31,7 +31,7 @@ export default async function AdminServicesPage() {
                 {s.durationMinutes} min
               </span>
             </div>
-            <p className="mt-2 text-sm leading-relaxed text-bark/55">
+            <p className="mt-2 text-sm leading-relaxed text-bark/68">
               {s.description}
             </p>
             <p className="mt-4 text-lg font-semibold text-leaf-700">

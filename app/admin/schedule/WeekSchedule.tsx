@@ -89,7 +89,7 @@ function MiniMonth({
       <p className="mb-1.5 text-center text-xs font-semibold text-bark/65">
         {label}
       </p>
-      <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] font-medium text-bark/35">
+      <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] font-medium text-bark/48">
         {MINI_DOW.map((w, i) => (
           <span key={i}>{w}</span>
         ))}
@@ -328,7 +328,7 @@ export default function WeekSchedule({
                 className="w-40 rounded-lg bg-cream-50 px-3 py-1.5 text-sm text-bark ring-1 ring-leaf-100 outline-none focus:ring-2 focus:ring-leaf-500"
               />
               <button onClick={addTherapist} disabled={pending || !newName.trim()} className="rounded-lg bg-leaf-700 px-3 py-1.5 text-sm font-medium text-cream-50 hover:bg-leaf-600 disabled:opacity-50">Add</button>
-              <button onClick={() => { setAdding(false); setNewName(""); }} className="rounded-lg px-2 py-1.5 text-sm text-bark/50 ring-1 ring-leaf-100 hover:bg-cream-50">✕</button>
+              <button onClick={() => { setAdding(false); setNewName(""); }} className="rounded-lg px-2 py-1.5 text-sm text-bark/62 ring-1 ring-leaf-100 hover:bg-cream-50">✕</button>
             </div>
           ) : (
             <button onClick={() => setAdding(true)} className="rounded-full bg-gold-500 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-onyx transition hover:bg-gold-300">
@@ -355,7 +355,7 @@ export default function WeekSchedule({
           set booking capacity.
         </p>
       ) : (
-        <p className="mb-3 text-sm text-bark/50">
+        <p className="mb-3 text-sm text-bark/62">
           Drag a booking to another day or therapist to reschedule (time of day is
           kept). Hover a therapist to rename or remove.
         </p>
@@ -366,14 +366,14 @@ export default function WeekSchedule({
         <div className="min-w-[920px]">
           {/* header */}
           <div className="grid border-b border-leaf-100" style={{ gridTemplateColumns: "160px repeat(7, 1fr)" }}>
-            <div className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-bark/45">
+            <div className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-bark/58">
               Therapist
             </div>
             {days.map((d) => {
               const isToday = dkey(d) === todayKey;
               return (
                 <div key={d.toISOString()} className={`border-l border-leaf-50 px-3 py-3 text-center ${isToday ? "bg-leaf-50" : ""}`}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-bark/45">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-bark/58">
                     {DAY_LABELS[(d.getDay() + 6) % 7]}
                   </p>
                   <p className={`text-sm font-semibold ${isToday ? "text-leaf-700" : "text-bark/70"}`}>
@@ -416,7 +416,7 @@ export default function WeekSchedule({
                               setRenameVal(lane.name);
                             }}
                             title="Rename"
-                            className="flex h-6 w-6 items-center justify-center rounded text-bark/45 hover:bg-cream-50 hover:text-leaf-700"
+                            className="flex h-6 w-6 items-center justify-center rounded text-bark/58 hover:bg-cream-50 hover:text-leaf-700"
                           >
                             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden>
                               <path d="M4 20h4L18.5 9.5a2 2 0 0 0-3-3L5 17v3Zm10-13 3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -478,7 +478,7 @@ export default function WeekSchedule({
                             <span className="min-w-0">
                               <span className="numeral font-semibold">{hhmm(b.s)}</span>{" "}
                               <span className="font-medium">{b.customerName}</span>
-                              <span className="block truncate text-bark/55">
+                              <span className="block truncate text-bark/68">
                                 {b.serviceName} · {b.durationMinutes}m
                               </span>
                             </span>
@@ -494,7 +494,7 @@ export default function WeekSchedule({
         </div>
       </div>
       {pending && (
-        <p className="mt-3 text-sm text-bark/45">Saving…</p>
+        <p className="mt-3 text-sm text-bark/58">Saving…</p>
       )}
 
       {edit && (

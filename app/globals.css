@@ -4,44 +4,44 @@
    Massage Corner Sofia — Premium palette "Emerald & Champagne"
    ════════════════════════════════════════════════════════════ */
 :root {
-  --cream: #f7f3ec; /* alabaster */
-  --bark: #1a2420; /* ink */
-  --onyx: #0b1714; /* darkest emerald-black */
+  --cream: #ddd0b6; /* deeper alabaster — less washed out */
+  --bark: #121c18; /* ink */
+  --onyx: #071210; /* darkest emerald-black */
 }
 
 @theme inline {
   /* พื้นหลัง / กระดาษ (alabaster) */
-  --color-cream: #f7f3ec;
-  --color-cream-50: #fbf9f3;
-  --color-cream-100: #efe9dd;
+  --color-cream: #ddd0b6;
+  --color-cream-50: #ede3d0;
+  --color-cream-100: #cabb98;
 
   /* เขียวมรกต (สีหลัก) — แมปบนชื่อ leaf-* เดิม */
-  --color-leaf-50: #e8efea;
-  --color-leaf-100: #d3e0d8;
-  --color-leaf-200: #a7c2b2;
-  --color-leaf-300: #6e9580;
-  --color-leaf-400: #3e6b57;
-  --color-leaf-500: #245040;
-  --color-leaf-600: #163a2e;
-  --color-leaf-700: #102b22;
-  --color-leaf-800: #0e1c18;
+  --color-leaf-50: #dce8df;
+  --color-leaf-100: #b8d0c0;
+  --color-leaf-200: #7aa892;
+  --color-leaf-300: #4a8068;
+  --color-leaf-400: #2a6048;
+  --color-leaf-500: #184838;
+  --color-leaf-600: #103528;
+  --color-leaf-700: #0b2820;
+  --color-leaf-800: #071a15;
 
   /* ดำมรกต (onyx) สำหรับ section เข้มสุด */
-  --color-onyx: #0b1714;
+  --color-onyx: #071210;
 
   /* ทองแชมเปญ (accent) */
-  --color-gold-50: #f5eedf;
-  --color-gold-100: #eadfc6;
-  --color-gold-200: #e3cda0;
-  --color-gold-300: #d6ba88;
-  --color-gold-400: #d0b27b;
-  --color-gold-500: #c9a86a;
-  --color-gold-600: #b8965a;
-  --color-gold-700: #9c7e47;
-  --color-gold: #c9a86a;
+  --color-gold-50: #f0e6d0;
+  --color-gold-100: #e4d4b0;
+  --color-gold-200: #d4b878;
+  --color-gold-300: #c8a050;
+  --color-gold-400: #bc9438;
+  --color-gold-500: #b08828;
+  --color-gold-600: #967020;
+  --color-gold-700: #7a5c18;
+  --color-gold: #b08828;
 
   /* ตัวอักษร */
-  --color-bark: #1a2420;
+  --color-bark: #121c18;
 
   /* ฟอนต์: เนื้อหา = Inter, หัวเรื่องหรู = Cormorant Garamond */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
@@ -62,8 +62,8 @@ body {
 
 /* การเลือกข้อความให้เป็นโทนทอง */
 ::selection {
-  background: #c9a86a;
-  color: #0b1714;
+  background: #b08828;
+  color: #071210;
 }
 
 /* ระยะห่างตัวอักษรกว้างพิเศษ สำหรับ label ตัวเล็ก (small caps) */

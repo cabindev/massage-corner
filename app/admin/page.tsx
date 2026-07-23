@@ -47,7 +47,7 @@ function Kpi({
   return (
     <div className={`rounded-2xl p-5 ring-1 ${tones[tone]}`}>
       <div className="flex items-start justify-between gap-3">
-        <p className={`text-sm ${dark ? "text-cream-50/80" : "text-bark/55"}`}>
+        <p className={`text-sm ${dark ? "text-cream-50/80" : "text-bark/68"}`}>
           {label}
         </p>
         <span
@@ -58,7 +58,7 @@ function Kpi({
       </div>
       <p className="numeral mt-3 text-3xl font-semibold">{value}</p>
       {hint && (
-        <p className={`mt-1 text-xs ${dark ? "text-cream-50/70" : "text-bark/45"}`}>
+        <p className={`mt-1 text-xs ${dark ? "text-cream-50/70" : "text-bark/58"}`}>
           {hint}
         </p>
       )}
@@ -272,7 +272,7 @@ export default async function AdminDashboardPage() {
             }
           >
             {therapists.length === 0 ? (
-              <p className="py-6 text-center text-sm text-bark/45">
+              <p className="py-6 text-center text-sm text-bark/58">
                 No therapists yet.
               </p>
             ) : (
@@ -301,14 +301,14 @@ export default async function AdminDashboardPage() {
           <Card
             title="Today's schedule"
             action={
-              <span className="text-xs text-bark/45">
+              <span className="text-xs text-bark/58">
                 {stats.todaySchedule.length} appointment
                 {stats.todaySchedule.length === 1 ? "" : "s"}
               </span>
             }
           >
             {stats.todaySchedule.length === 0 ? (
-              <p className="py-12 text-center text-sm text-bark/45">
+              <p className="py-12 text-center text-sm text-bark/58">
                 No appointments scheduled for today.
               </p>
             ) : (
@@ -322,7 +322,7 @@ export default async function AdminDashboardPage() {
                       <p className="numeral font-semibold text-leaf-700">
                         {formatTime(b.bookingTime)}
                       </p>
-                      <p className="text-[10px] text-bark/40">
+                      <p className="text-[10px] text-bark/52">
                         {b.durationMinutes}m
                       </p>
                     </div>
@@ -330,7 +330,7 @@ export default async function AdminDashboardPage() {
                       <p className="truncate font-medium text-bark">
                         {b.customerName}
                       </p>
-                      <p className="truncate text-sm text-bark/55">
+                      <p className="truncate text-sm text-bark/68">
                         {b.serviceName}
                         {b.therapistName ? ` · ${b.therapistName}` : ""}
                       </p>
@@ -355,7 +355,7 @@ export default async function AdminDashboardPage() {
           }
         >
           {stats.upcoming.length === 0 ? (
-            <p className="py-8 text-center text-sm text-bark/45">
+            <p className="py-8 text-center text-sm text-bark/58">
               No upcoming appointments.
             </p>
           ) : (
@@ -366,7 +366,7 @@ export default async function AdminDashboardPage() {
                     <p className="truncate text-sm font-medium text-bark">
                       {b.customerName}
                     </p>
-                    <p className="truncate text-xs text-bark/50">
+                    <p className="truncate text-xs text-bark/62">
                       {formatThaiDateTime(b.bookingTime)}
                     </p>
                   </div>

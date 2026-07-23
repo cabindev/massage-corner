@@ -32,7 +32,7 @@ const ST: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Pending", cls: "bg-amber-100 text-amber-700" },
   CONFIRMED: { label: "Confirmed", cls: "bg-leaf-100 text-leaf-700" },
   COMPLETED: { label: "Completed", cls: "bg-sky-100 text-sky-700" },
-  CANCELLED: { label: "Cancelled", cls: "bg-bark/10 text-bark/50" },
+  CANCELLED: { label: "Cancelled", cls: "bg-bark/10 text-bark/62" },
   REJECTED: { label: "Rejected", cls: "bg-red-100 text-red-700" },
 };
 
@@ -200,7 +200,7 @@ export default function BookingCalendar({
             <button onClick={() => shift(1)} className="flex h-8 w-8 items-center justify-center rounded-lg text-bark/60 ring-1 ring-leaf-100 transition hover:bg-cream-50" aria-label="Next month">›</button>
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-wide text-bark/40">
+        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-wide text-bark/52">
           {WEEKDAYS.map((w) => (<span key={w} className="py-1">{w}</span>))}
         </div>
         <div className="mt-1 grid grid-cols-7 gap-1">
@@ -237,13 +237,13 @@ export default function BookingCalendar({
         <p className="font-display text-lg font-medium text-leaf-700">
           {selectedLabel}
         </p>
-        <p className="text-xs text-bark/45">
+        <p className="text-xs text-bark/58">
           {dayBookings.length} booking{dayBookings.length === 1 ? "" : "s"} · capacity {therapistCount}
         </p>
 
         <ul className="mt-3 max-h-40 space-y-1.5 overflow-y-auto">
           {dayBookings.length === 0 ? (
-            <li className="py-5 text-center text-sm text-bark/40">No bookings this day.</li>
+            <li className="py-5 text-center text-sm text-bark/52">No bookings this day.</li>
           ) : (
             dayBookings.map((b) => {
               const c = therapistColor(b.therapistId);
@@ -257,7 +257,7 @@ export default function BookingCalendar({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-bark">{b.customerName}</span>
-                    <span className="flex items-center gap-1.5 truncate text-xs text-bark/55">
+                    <span className="flex items-center gap-1.5 truncate text-xs text-bark/68">
                       <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: c.base }} />
                       {b.serviceName}{b.therapistName ? ` · ${b.therapistName}` : " · unassigned"}
                     </span>
@@ -269,7 +269,7 @@ export default function BookingCalendar({
           )}
         </ul>
 
-        <p className="mt-4 mb-2 text-[11px] font-semibold uppercase tracking-wide text-bark/45">
+        <p className="mt-4 mb-2 text-[11px] font-semibold uppercase tracking-wide text-bark/58">
           Availability — click a free slot to add a walk-in
         </p>
         <div className="grid grid-cols-4 gap-1 sm:grid-cols-5">
@@ -314,7 +314,7 @@ export default function BookingCalendar({
                 <h3 className="font-display text-xl font-medium text-leaf-700">
                   New walk-in
                 </h3>
-                <p className="text-sm text-bark/55">
+                <p className="text-sm text-bark/68">
                   {selectedLabel} · {walkTime}
                   {selSvc ? ` – ${hhmm(
                     Number(walkTime.split(":")[0]) * 60 +
@@ -323,7 +323,7 @@ export default function BookingCalendar({
                   )}` : ""}
                 </p>
               </div>
-              <button type="button" onClick={() => setWalkTime(null)} className="text-bark/40 hover:text-bark" aria-label="Close">✕</button>
+              <button type="button" onClick={() => setWalkTime(null)} className="text-bark/52 hover:text-bark" aria-label="Close">✕</button>
             </div>
 
             <div className="mt-5 space-y-3">

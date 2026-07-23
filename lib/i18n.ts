@@ -71,6 +71,13 @@ export const dict = {
       "We combine time-honored techniques with a warm, welcoming atmosphere to give you a truly restorative experience. Whether you seek relief from chronic pain, deep relaxation, or simply a moment of calm, our team is here for you.",
     about_quote:
       "A luxury wellness space should never feel overwhelming. It should feel still, grounded, and deeply cared for.",
+    about_vida_label: "Meet Our Therapist",
+    about_vida_name: "Vida",
+    about_vida_title: "A Skilled Therapist with Over 10 Years of Experience",
+    about_vida_p1:
+      "With more than a decade of professional massage experience, Vida specializes in oil massage, aromatherapy, and traditional Thai massage. Through years of working with clients across several European countries, she has developed a deep understanding of different body structures and physical needs unique to each individual.",
+    about_vida_p2:
+      "By combining this international experience with the traditional art of Thai pressure-point therapy and muscle-line techniques, Vida creates treatments that promote deep relaxation, relieve tension, ease muscle fatigue, and effectively help with office syndrome symptoms. Her touch is not only therapeutic, but also calming — allowing the body and mind to truly unwind in comfort and balance.",
     feat_certified: "Certified Thai Therapists",
     feat_oils: "Natural Oils & Herbs",
     feat_calm: "Calm & Serene Space",
@@ -120,6 +127,7 @@ export const dict = {
     cont_phone: "Phone",
     cont_hours: "Working Hours",
     cont_hours_val: "Tuesday – Sunday: 10:30 – 19:00",
+    cont_connect: "Connect With Us",
     address_val: "15 Srebarna Str., Sofia 1407, Bulgaria",
     rights: "All rights reserved.",
     nav_home: "Home",
@@ -191,6 +199,13 @@ export const dict = {
       "Съчетаваме изпитани техники с топла, приветлива атмосфера, за да ви осигурим наистина възстановяващо преживяване. Независимо дали търсите облекчение от хронична болка, дълбока релаксация или просто миг на спокойствие, нашият екип е тук за вас.",
     about_quote:
       "Луксозното уелнес пространство никога не бива да изглежда претоварващо. То трябва да усеща спокойствие, заземяване и дълбока грижа.",
+    about_vida_label: "Запознайте се с нашия терапевт",
+    about_vida_name: "Vida",
+    about_vida_title: "Опитен терапевт с над 10 години практика",
+    about_vida_p1:
+      "С повече от десет години професионален опит в масажа, Vida е специалист в масаж с масло, ароматерапия и традиционен тайландски масаж. През годините работа с клиенти в няколко европейски държави тя е придобила дълбоко разбиране за различните телесни структури и физически нужди на всеки човек.",
+    about_vida_p2:
+      "Чрез съчетание на този международен опит с традиционното изкуство на тайландската терапия на натискови точки и техники по мускулните линии, Vida създава процедури, които насърчават дълбока релаксация, облекчават напрежението, намаляват мускулната умора и ефективно помагат при симптомите на офис синдром. Нейното прикосновение е не само терапевтично, но и успокояващо — позволявайки на тялото и ума наистина да се отпуснат в комфорт и баланс.",
     feat_certified: "Сертифицирани терапевти",
     feat_oils: "Натурални масла и билки",
     feat_calm: "Спокойна и уютна обстановка",
@@ -240,6 +255,7 @@ export const dict = {
     cont_phone: "Телефон",
     cont_hours: "Работно време",
     cont_hours_val: "Вторник – Неделя: 10:30 – 19:00",
+    cont_connect: "Свържете се с нас",
     address_val: "ул. Сребърна 15, София 1407, България",
     rights: "Всички права запазени.",
     nav_home: "Начало",

@@ -24,7 +24,7 @@ function LangToggle({ scrolled }: { scrolled: boolean }) {
             lang === l
               ? "bg-gold-500 text-onyx"
               : scrolled
-              ? "text-bark/55 hover:text-gold-700"
+              ? "text-bark/68 hover:text-gold-700"
               : "text-cream-50/70 hover:text-cream-50"
           }`}
           aria-pressed={lang === l}
@@ -73,28 +73,16 @@ export default function Navbar() {
           : "border-b border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-3">
+      <div className="mx-auto flex h-28 max-w-6xl items-center justify-between px-6 sm:h-32">
+        <Link href="/" className="flex shrink-0 items-center">
           <Image
             src="/logo.webp"
             alt="Massage Corner Sofia"
-            width={48}
-            height={34}
-            className="h-11 w-auto"
+            width={1398}
+            height={995}
+            className="h-20 w-auto object-contain sm:h-24"
             priority
           />
-          <span className="leading-tight">
-            <span
-              className={`block font-display text-xl font-medium tracking-wide transition-colors ${
-                scrolled ? "text-leaf-700" : "text-cream-50"
-              }`}
-            >
-              Massage Corner <span className="text-gold-500">Sofia</span>
-            </span>
-            <span className="block text-[9px] uppercase tracking-widest-2 text-gold-500">
-              {t("brand_tag")}
-            </span>
-          </span>
         </Link>
 
         <nav className="flex items-center gap-2 sm:gap-7">
@@ -104,7 +92,7 @@ export default function Navbar() {
               href={link.href}
               className={`group relative hidden text-xs font-medium uppercase tracking-wider transition-colors sm:inline-block ${
                 scrolled
-                  ? "text-bark/65 hover:text-gold-700"
+                  ? "text-bark/75 hover:text-gold-700"
                   : "text-cream-50/80 hover:text-cream-50"
               }`}
             >

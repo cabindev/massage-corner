@@ -90,14 +90,14 @@ export default function TherapistManager({
           <h2 className="font-display text-xl font-medium text-leaf-700">
             Therapists
           </h2>
-          <span className="text-xs text-bark/45">
+          <span className="text-xs text-bark/58">
             {therapists.filter((t) => t.isActive).length} active ·{" "}
             {therapists.length} total
           </span>
         </div>
 
         {therapists.length === 0 ? (
-          <p className="px-6 py-12 text-center text-sm text-bark/45">
+          <p className="px-6 py-12 text-center text-sm text-bark/58">
             No therapists yet — add one above.
           </p>
         ) : (
@@ -112,7 +112,7 @@ export default function TherapistManager({
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-display text-lg ${
                     t.isActive
                       ? "bg-leaf-100 text-leaf-700"
-                      : "bg-bark/5 text-bark/40"
+                      : "bg-bark/5 text-bark/52"
                   }`}
                 >
                   {t.name.charAt(0).toUpperCase()}
@@ -138,19 +138,19 @@ export default function TherapistManager({
                     <p className="flex items-center gap-2 font-medium text-bark">
                       {t.name}
                       {!t.isActive && (
-                        <span className="rounded-full bg-bark/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-bark/50">
+                        <span className="rounded-full bg-bark/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-bark/62">
                           Off
                         </span>
                       )}
                     </p>
                   )}
                   {t.bio && editingId !== t.id && (
-                    <p className="truncate text-xs text-bark/50">{t.bio}</p>
+                    <p className="truncate text-xs text-bark/62">{t.bio}</p>
                   )}
                 </div>
 
                 {/* upcoming count */}
-                <span className="hidden text-xs text-bark/45 sm:block">
+                <span className="hidden text-xs text-bark/58 sm:block">
                   {t.upcomingCount} upcoming
                 </span>
 

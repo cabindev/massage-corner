@@ -12,7 +12,7 @@ export default async function AdminTherapistsPage() {
         <h1 className="font-display text-3xl font-medium text-leaf-700">
           Therapists
         </h1>
-        <p className="mt-1 text-sm text-bark/55">
+        <p className="mt-1 text-sm text-bark/68">
           Add, rename, or remove therapists. Active therapists set the booking
           capacity.
         </p>

@@ -31,7 +31,7 @@ export default async function AdminBookingsPage() {
         <h1 className="font-display text-3xl font-medium text-leaf-700">
           Bookings
         </h1>
-        <p className="mt-1 text-sm text-bark/55">
+        <p className="mt-1 text-sm text-bark/68">
           Add, edit, delete, assign a therapist and update status — all here.
         </p>
       </header>

@@ -16,7 +16,7 @@ export default function Footer() {
             <p className="mt-2 text-[10px] uppercase tracking-widest-2 text-gold-400">
               {t("brand_tag")}
             </p>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-cream-50/55">
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-cream-50/68">
               {t("about_p1")}
             </p>
           </div>
@@ -25,7 +25,7 @@ export default function Footer() {
             <h4 className="rule-gold inline-flex items-center text-[11px] font-medium uppercase tracking-widest-2 text-gold-400">
               {t("nav_contact")}
             </h4>
-            <p className="mt-4 text-sm leading-relaxed text-cream-50/60">
+            <p className="mt-4 text-sm leading-relaxed text-cream-50/72">
               {t("address_val")}
             </p>
             <a
@@ -40,7 +40,7 @@ export default function Footer() {
             <h4 className="rule-gold inline-flex items-center text-[11px] font-medium uppercase tracking-widest-2 text-gold-400">
               {t("cont_hours")}
             </h4>
-            <p className="mt-4 text-sm text-cream-50/60">{t("cont_hours_val")}</p>
+            <p className="mt-4 text-sm text-cream-50/72">{t("cont_hours_val")}</p>
             <Link
               href="/booking"
               className="mt-5 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-gold-300 hover:text-gold-200"
@@ -51,7 +51,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-cream-50/10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 text-xs tracking-wide text-cream-50/40 sm:flex-row">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 text-xs tracking-wide text-cream-50/55 sm:flex-row">
           <span>
             © {new Date().getFullYear()} Massage Corner Sofia · {t("rights")}
           </span>

@@ -32,7 +32,7 @@ const ST: Record<Status, { label: string; cls: string }> = {
   CONFIRMED: { label: "Confirmed", cls: "bg-leaf-100 text-leaf-700 ring-leaf-200" },
   REJECTED: { label: "Rejected", cls: "bg-red-100 text-red-700 ring-red-200" },
   COMPLETED: { label: "Completed", cls: "bg-sky-100 text-sky-700 ring-sky-200" },
-  CANCELLED: { label: "Cancelled", cls: "bg-bark/10 text-bark/55 ring-bark/15" },
+  CANCELLED: { label: "Cancelled", cls: "bg-bark/10 text-bark/68 ring-bark/15" },
 };
 
 function actionsFor(status: Status): { to: Status; label: string; cls: string }[] {
@@ -182,7 +182,7 @@ export default function BookingsTable({
               }`}
             >
               {f}
-              <span className={`ml-1.5 ${filter === f ? "text-cream-50/70" : "text-bark/35"}`}>
+              <span className={`ml-1.5 ${filter === f ? "text-cream-50/70" : "text-bark/48"}`}>
                 {counts[f]}
               </span>
             </button>
@@ -192,7 +192,7 @@ export default function BookingsTable({
           <div className="relative">
             <svg
               viewBox="0 0 24 24"
-              className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bark/35"
+              className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-bark/48"
               fill="none"
               aria-hidden
             >
@@ -208,7 +208,7 @@ export default function BookingsTable({
             {query && (
               <button
                 onClick={() => setQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-bark/40 hover:text-bark"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-bark/52 hover:text-bark"
                 aria-label="Clear search"
               >
                 ✕
@@ -231,7 +231,7 @@ export default function BookingsTable({
       )}
 
       {query.trim() && (
-        <p className="mb-2 text-xs text-bark/45">
+        <p className="mb-2 text-xs text-bark/58">
           {shown.length} result{shown.length === 1 ? "" : "s"} for “
           {query.trim()}” · searching all statuses
         </p>
@@ -239,7 +239,7 @@ export default function BookingsTable({
 
       <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-leaf-100">
         {shown.length === 0 ? (
-          <p className="px-6 py-12 text-center text-sm text-bark/45">
+          <p className="px-6 py-12 text-center text-sm text-bark/58">
             {query.trim()
               ? `No bookings match “${query.trim()}”.`
               : `No bookings in “${filter}”.`}
@@ -257,7 +257,7 @@ export default function BookingsTable({
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="font-medium text-bark">{r.customerName}</p>
-                        <a href={`tel:${r.phone}`} className="text-xs text-bark/45">{r.phone}</a>
+                        <a href={`tel:${r.phone}`} className="text-xs text-bark/58">{r.phone}</a>
                       </div>
                       <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ring-1 ${ST[r.status].cls}`}>
                         {ST[r.status].label}
@@ -268,9 +268,9 @@ export default function BookingsTable({
                       {isToday && (
                         <span className="rounded-full bg-leaf-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-leaf-700">Today</span>
                       )}
-                      <span className="text-xs text-bark/40">{r.serviceName} · {r.durationMinutes}m</span>
+                      <span className="text-xs text-bark/52">{r.serviceName} · {r.durationMinutes}m</span>
                     </div>
-                    {r.notes && <p className="mt-1 text-xs text-bark/40">{r.notes}</p>}
+                    {r.notes && <p className="mt-1 text-xs text-bark/52">{r.notes}</p>}
                     <div className="mt-3 flex items-center gap-2">
                       <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: c.base }} />
                       <select
@@ -307,7 +307,7 @@ export default function BookingsTable({
             {/* ── desktop: table ── */}
             <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[820px] text-left text-sm">
-              <thead className="border-b border-leaf-100 bg-cream-50 text-[11px] uppercase tracking-wide text-bark/45">
+              <thead className="border-b border-leaf-100 bg-cream-50 text-[11px] uppercase tracking-wide text-bark/58">
                 <tr>
                   <th className="px-4 py-2.5 font-semibold">Customer</th>
                   <th className="px-4 py-2.5 font-semibold">When</th>
@@ -325,11 +325,11 @@ export default function BookingsTable({
                     <tr key={r.id} className={`hover:bg-cream-50/50 ${busy ? "opacity-50" : ""}`}>
                       <td className="px-4 py-2.5">
                         <p className="font-medium text-bark">{r.customerName}</p>
-                        <a href={`tel:${r.phone}`} className="text-xs text-bark/45 hover:text-leaf-700">
+                        <a href={`tel:${r.phone}`} className="text-xs text-bark/58 hover:text-leaf-700">
                           {r.phone}
                         </a>
                         {r.notes && (
-                          <p className="max-w-[220px] truncate text-xs text-bark/40">{r.notes}</p>
+                          <p className="max-w-[220px] truncate text-xs text-bark/52">{r.notes}</p>
                         )}
                       </td>
                       <td className="px-4 py-2.5">
@@ -341,7 +341,7 @@ export default function BookingsTable({
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-bark/40">
+                        <span className="text-xs text-bark/52">
                           {r.serviceName} · {r.durationMinutes}m
                         </span>
                       </td>
@@ -383,7 +383,7 @@ export default function BookingsTable({
                             onClick={() => openEdit(r)}
                             disabled={busy}
                             title="Edit"
-                            className="flex h-7 w-7 items-center justify-center rounded-lg text-bark/50 ring-1 ring-leaf-100 transition hover:bg-cream-50 hover:text-leaf-700 disabled:opacity-40"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-bark/62 ring-1 ring-leaf-100 transition hover:bg-cream-50 hover:text-leaf-700 disabled:opacity-40"
                           >
                             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden>
                               <path d="M4 20h4L18.5 9.5a2 2 0 0 0-3-3L5 17v3Zm10-13 3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
