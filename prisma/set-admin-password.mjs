@@ -1,7 +1,11 @@
 // เปลี่ยนรหัสผ่านผู้ใช้หลังบ้าน โดยไม่ต้องพิมพ์รหัสลงคำสั่ง (ไม่ค้างใน shell history)
 //
-//   npm run admin:password                      → เปลี่ยนของ admin@massage.local
-//   npm run admin:password -- someone@shop.com  → ระบุอีเมลเอง
+//   npm run admin:password                          → เปลี่ยนของ admin@massage.local
+//   npm run admin:password -- someone@shop.com      → ระบุอีเมลเอง
+//   npm run admin:password -- --create a@shop.com   → สร้างใหม่ถ้ายังไม่มี (role ADMIN)
+//
+// --create มีไว้สำหรับ DB ที่ยังไม่มี user เลย (เช่น prod ที่ import มาแต่ตาราง
+// Service/Therapist) — ใช้แทน `npm run seed` ซึ่ง deleteMany ลบ booking จริงทิ้ง
 //
 // พิมพ์รหัสตอน prompt (จอไม่แสดงตัวอักษร) หรือ pipe เข้ามาก็ได้:
 //   printf 'newpass\n' | node --env-file=.env prisma/set-admin-password.mjs
@@ -56,24 +60,33 @@ function readSecret(prompt) {
 }
 
 async function main() {
-  const email = (process.argv[2] || DEFAULT_EMAIL).trim();
+  const args = process.argv.slice(2);
+  const create = args.includes("--create");
+  const email = (args.find((a) => !a.startsWith("--")) || DEFAULT_EMAIL).trim();
 
   const user = await prisma.user.findUnique({
     where: { email },
     select: { id: true, email: true, name: true, role: true },
   });
-  if (!user) {
+
+  if (!user && !create) {
     console.error(`✖ ไม่พบผู้ใช้ ${email}`);
     const all = await prisma.user.findMany({ select: { email: true, role: true } });
     if (all.length) {
       console.error("  ผู้ใช้ที่มีอยู่:");
       all.forEach((u) => console.error(`    - ${u.email} (${u.role})`));
+    } else {
+      console.error("  ตาราง User ว่างเปล่า — ใช้ --create เพื่อสร้างคนแรก");
     }
     process.exitCode = 1;
     return;
   }
 
-  console.log(`กำลังเปลี่ยนรหัสของ: ${user.email} — ${user.name ?? "(ไม่มีชื่อ)"} (${user.role})`);
+  console.log(
+    user
+      ? `กำลังเปลี่ยนรหัสของ: ${user.email} — ${user.name ?? "(ไม่มีชื่อ)"} (${user.role})`
+      : `จะสร้างผู้ใช้ใหม่: ${email} (role ADMIN)`
+  );
 
   const pass = await readSecret("รหัสผ่านใหม่: ");
   if (pass.length < MIN_LENGTH) {
@@ -92,7 +105,13 @@ async function main() {
   }
 
   const hashed = await bcrypt.hash(pass, BCRYPT_ROUNDS);
-  await prisma.user.update({ where: { email }, data: { password: hashed } });
+  if (user) {
+    await prisma.user.update({ where: { email }, data: { password: hashed } });
+  } else {
+    await prisma.user.create({
+      data: { email, password: hashed, name: "Administrator", role: "ADMIN" },
+    });
+  }
 
   // อ่านกลับมาตรวจว่า hash ที่บันทึกใช้ได้จริง
   const saved = await prisma.user.findUnique({
@@ -101,7 +120,8 @@ async function main() {
   });
   const ok = await bcrypt.compare(pass, saved.password);
 
-  console.log(ok ? `✔ เปลี่ยนรหัสของ ${email} เรียบร้อย` : "✖ บันทึกแล้วแต่ตรวจสอบไม่ผ่าน");
+  const verb = user ? "เปลี่ยนรหัสของ" : "สร้างผู้ใช้";
+  console.log(ok ? `✔ ${verb} ${email} เรียบร้อย` : "✖ บันทึกแล้วแต่ตรวจสอบไม่ผ่าน");
   if (!ok) process.exitCode = 1;
 }
 
