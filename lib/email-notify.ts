@@ -92,8 +92,10 @@ function getTransporter(user: string, pass: string) {
  *   BOOKING_NOTIFY_EMAIL  ผู้รับ ใส่หลายอีเมลได้ คั่นด้วย comma (ไม่ตั้ง = ส่งหา EMAIL_USER)
  */
 export async function notifyEmailNewBooking(details: NewBookingDetails) {
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
+  const user = process.env.EMAIL_USER?.trim();
+  // Google โชว์ App Password เป็น 4 กลุ่มคั่นช่องว่าง ("abcd efgh ijkl mnop")
+  // คนก๊อปมาวางมักติดช่องว่างมาด้วย — ตัดทิ้งให้เลย จะได้ไม่เจอ 535 โดยไม่รู้สาเหตุ
+  const pass = process.env.EMAIL_PASS?.replace(/\s/g, "");
   if (!user || !pass) return;
 
   // Gmail จะเขียน From ทับเป็นบัญชีที่ล็อกอินอยู่แล้ว ใส่ชื่อร้านให้อ่านง่ายพอ
