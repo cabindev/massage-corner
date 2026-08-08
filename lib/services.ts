@@ -200,8 +200,13 @@ export async function getServices(): Promise<ServiceDTO[]> {
         priceTiers: (s.priceTiers as PriceTier[] | null) ?? null,
       }));
     }
-  } catch {
+    console.warn(
+      "[getServices] DB ตอบกลับ 0 บริการ — ใช้ MOCK_SERVICES แทน (id เป็น 'mock-*' ปุ่ม BOOK จะลิงก์ไปบริการที่ไม่มีจริง)"
+    );
+  } catch (err) {
     // ฐานข้อมูลยังไม่พร้อม → ใช้ข้อมูลตัวอย่าง
+    // log ไว้ด้วย ไม่งั้น DB ล่มแล้วเว็บยังดูปกติ กว่าจะรู้ตัวก็ตอนลูกค้าจองผิดรายการ
+    console.warn("[getServices] อ่าน DB ไม่ได้ — ใช้ MOCK_SERVICES แทน:", err);
   }
   return MOCK_SERVICES;
 }
