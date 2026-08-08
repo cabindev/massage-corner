@@ -1,4 +1,4 @@
-const RESEND_URL = "https://api.resend.com/emails";
+import nodemailer from "nodemailer";
 
 export type NewBookingDetails = {
   customerName: string;
@@ -64,23 +64,44 @@ function buildHtml(rows: [string, string][]): string {
 }
 
 /**
- * แจ้งเจ้าของร้านทางอีเมลเมื่อมีการจองใหม่ (Resend HTTP API — ไม่ต้องลง package เพิ่ม)
+ * transporter ตัวเดียวใช้ซ้ำทั้ง process (nodemailer จะ pool connection ให้)
+ * สร้างแบบ lazy เพราะตอน build ยังไม่มี env
+ */
+let transporter: nodemailer.Transporter | null = null;
+function getTransporter(user: string, pass: string) {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // STARTTLS
+      auth: { user, pass },
+    });
+  }
+  return transporter;
+}
+
+/**
+ * แจ้งเจ้าของร้านทางอีเมลเมื่อมีการจองใหม่ (Gmail SMTP ผ่าน nodemailer)
  *
- * เงียบ (no-op) ถ้ายังไม่ตั้งค่า env และไม่ throw ถ้า Resend ล่ม —
+ * เงียบ (no-op) ถ้ายังไม่ตั้งค่า env และไม่ throw ถ้าส่งไม่สำเร็จ —
  * การแจ้งเตือนต้องไม่ทำให้การจองของลูกค้าล้มเหลว
  *
- * ต้องตั้ง env: RESEND_API_KEY, MAIL_FROM, BOOKING_NOTIFY_EMAIL
- * (BOOKING_NOTIFY_EMAIL ใส่หลายอีเมลได้ คั่นด้วย comma)
+ * ต้องตั้ง env:
+ *   EMAIL_USER            บัญชี Gmail ที่ใช้ส่ง
+ *   EMAIL_PASS            App Password 16 หลัก (ไม่ใช่รหัสผ่าน Gmail ปกติ — ต้องเปิด 2FA ก่อน)
+ *   BOOKING_NOTIFY_EMAIL  ผู้รับ ใส่หลายอีเมลได้ คั่นด้วย comma (ไม่ตั้ง = ส่งหา EMAIL_USER)
  */
 export async function notifyEmailNewBooking(details: NewBookingDetails) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.MAIL_FROM;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+  if (!user || !pass) return;
+
+  // Gmail จะเขียน From ทับเป็นบัญชีที่ล็อกอินอยู่แล้ว ใส่ชื่อร้านให้อ่านง่ายพอ
   const to = (process.env.BOOKING_NOTIFY_EMAIL ?? "")
     .split(",")
     .map((addr) => addr.trim())
     .filter(Boolean);
-
-  if (!apiKey || !from || to.length === 0) return;
+  const recipients = to.length > 0 ? to : [user];
 
   const when = formatWhen(details.bookingTime);
   const rows: [string, string][] = [
@@ -92,23 +113,13 @@ export async function notifyEmailNewBooking(details: NewBookingDetails) {
   if (details.notes) rows.push(["Notes", details.notes]);
 
   try {
-    const res = await fetch(RESEND_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from,
-        to,
-        subject: `New booking — ${details.customerName} · ${when}`,
-        text: rows.map(([label, value]) => `${label}: ${value}`).join("\n"),
-        html: buildHtml(rows),
-      }),
+    await getTransporter(user, pass).sendMail({
+      from: `"Massage Corner Sofia" <${user}>`,
+      to: recipients,
+      subject: `New booking — ${details.customerName} · ${when}`,
+      text: rows.map(([label, value]) => `${label}: ${value}`).join("\n"),
+      html: buildHtml(rows),
     });
-    if (!res.ok) {
-      console.error("[notifyEmailNewBooking]", res.status, await res.text());
-    }
   } catch (err) {
     console.error("[notifyEmailNewBooking]", err);
   }
