@@ -16,6 +16,10 @@
 //      ควรตามด้วยการเปลี่ยนรหัสอีกครั้งด้วยวิธีที่ไม่ต้องพิมพ์ลงคำสั่ง)
 //   npm run admin:password -- --create --password=xxxx a@shop.com
 //
+// ที่ไม่มี DATABASE_URL ใน env เลย (ช่องรันคำสั่งของ Plesk ไม่ได้รับ env ของแอป)
+// ใส่ --database-url=... มาในคำสั่งได้ ทำให้คำสั่งเดียวจบ ไม่ต้องมีไฟล์ .env:
+//   npm run admin:password -- --create --password=xxxx --database-url=mysql://... a@shop.com
+//
 // สคริปต์นี้แตะเฉพาะแถวใน User ที่อีเมลตรงเท่านั้น — ไม่ลบข้อมูลอะไรทั้งสิ้น
 // (ต่างจาก `npm run seed` ที่ deleteMany ทั้ง Service/Booking/Therapist)
 import readline from "node:readline";
@@ -26,6 +30,15 @@ import { PrismaClient } from "@prisma/client";
 const DEFAULT_EMAIL = "admin@massage.local";
 const MIN_LENGTH = 10;
 const BCRYPT_ROUNDS = 10; // ให้ตรงกับ prisma/seed.mjs
+
+const argv = process.argv.slice(2);
+
+// ต้องตั้งก่อนสร้าง PrismaClient — Prisma อ่าน DATABASE_URL ตอนสร้าง client
+const urlFromArg = argv.find((a) => a.startsWith("--database-url="))?.slice(15);
+if (urlFromArg) {
+  process.env.DATABASE_URL = urlFromArg;
+  console.log("ใช้ DATABASE_URL จาก --database-url=");
+}
 
 const prisma = new PrismaClient();
 
@@ -66,7 +79,7 @@ function readSecret(prompt) {
 }
 
 async function main() {
-  const args = process.argv.slice(2);
+  const args = argv;
   const create = args.includes("--create");
   const email = (args.find((a) => !a.startsWith("--")) || DEFAULT_EMAIL).trim();
 
