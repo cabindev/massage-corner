@@ -12,7 +12,8 @@
     "lint": "eslint",
     "seed": "node --env-file=.env prisma/seed.mjs",
     "seed:sample": "node --env-file=.env prisma/sample-bookings.mjs",
-    "seed:sample:clear": "node --env-file=.env prisma/sample-bookings.mjs --clear"
+    "seed:sample:clear": "node --env-file=.env prisma/sample-bookings.mjs --clear",
+    "admin:password": "node --env-file=.env prisma/set-admin-password.mjs"
   },
   "prisma": {
     "seed": "node --env-file=.env prisma/seed.mjs"
