@@ -15,7 +15,8 @@ import {
   CLOSE_MINUTES,
   LAST_SLOT_MINUTES,
 } from "@/lib/schedule-config";
-import { notifyLineNewBooking } from "@/lib/line-notify";
+import { notifyEmailNewBooking } from "@/lib/email-notify";
+import { after } from "next/server";
 
 /** ข้อมูลที่ฟอร์มส่งเข้ามา */
 export type BookingInput = {
@@ -156,12 +157,16 @@ export async function createBooking(
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
     );
 
-    await notifyLineNewBooking({
-      customerName,
-      phone,
-      serviceName,
-      bookingTime: startTime,
-    });
+    // ส่งหลังตอบ response แล้ว — ลูกค้าไม่ต้องรอ Resend
+    after(() =>
+      notifyEmailNewBooking({
+        customerName,
+        phone,
+        serviceName,
+        bookingTime: startTime,
+        notes,
+      })
+    );
 
     return { ok: true, bookingId };
   } catch (err) {

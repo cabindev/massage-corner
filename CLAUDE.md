@@ -23,6 +23,10 @@ live in `public/` (no external/PHP dependencies).
   `NEXTAUTH_SECRET` is missing, NextAuth generates a random secret per process,
   so existing sessions break on every restart (`JWT_SESSION_ERROR: decryption
   failed`). If you hit that error, check `.env` first.
+- `RESEND_API_KEY`, `MAIL_FROM`, `BOOKING_NOTIFY_EMAIL` — owner email alert on
+  each new booking (`lib/email-notify.ts`). Any of them empty ⇒ **silent no-op**,
+  booking still succeeds. `MAIL_FROM` must be a Resend-verified domain;
+  `BOOKING_NOTIFY_EMAIL` accepts a comma-separated list.
 
 ## Data model (`prisma/schema.prisma`, provider = mysql)
 
