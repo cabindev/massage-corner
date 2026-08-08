@@ -10,6 +10,9 @@
 // พิมพ์รหัสตอน prompt (จอไม่แสดงตัวอักษร) หรือ pipe เข้ามาก็ได้:
 //   printf 'newpass\n' | node --env-file=.env prisma/set-admin-password.mjs
 //
+// ที่ไม่มี terminal ให้พิมพ์ (เช่นช่อง Run script ของ Plesk) ให้ตั้ง env
+// ADMIN_INIT_PASSWORD ไว้ชั่วคราวแล้วรัน — **ลบ env ตัวนี้ทิ้งทันทีหลังรันเสร็จ**
+//
 // สคริปต์นี้แตะเฉพาะแถวใน User ที่อีเมลตรงเท่านั้น — ไม่ลบข้อมูลอะไรทั้งสิ้น
 // (ต่างจาก `npm run seed` ที่ deleteMany ทั้ง Service/Booking/Therapist)
 import readline from "node:readline";
@@ -88,14 +91,23 @@ async function main() {
       : `จะสร้างผู้ใช้ใหม่: ${email} (role ADMIN)`
   );
 
-  const pass = await readSecret("รหัสผ่านใหม่: ");
+  // ที่ไม่มี TTY (Plesk Run script, CI) รับรหัสผ่าน env แทนการ prompt
+  const fromEnv = process.env.ADMIN_INIT_PASSWORD?.trim();
+  if (fromEnv) console.log("อ่านรหัสจาก ADMIN_INIT_PASSWORD (อย่าลืมลบ env ตัวนี้ทิ้งหลังรันเสร็จ)");
+
+  const pass = fromEnv || (await readSecret("รหัสผ่านใหม่: "));
   if (pass.length < MIN_LENGTH) {
-    console.error(`✖ รหัสสั้นเกินไป ต้องอย่างน้อย ${MIN_LENGTH} ตัวอักษร`);
+    console.error(
+      `✖ รหัสสั้นเกินไป ต้องอย่างน้อย ${MIN_LENGTH} ตัวอักษร` +
+        (process.stdin.isTTY || fromEnv
+          ? ""
+          : " (ไม่มี terminal ให้พิมพ์ — ตั้ง ADMIN_INIT_PASSWORD แล้วรันใหม่)")
+    );
     process.exitCode = 1;
     return;
   }
 
-  if (process.stdin.isTTY) {
+  if (!fromEnv && process.stdin.isTTY) {
     const again = await readSecret("พิมพ์ซ้ำอีกครั้ง: ");
     if (again !== pass) {
       console.error("✖ รหัสทั้งสองครั้งไม่ตรงกัน — ไม่ได้เปลี่ยนอะไร");
