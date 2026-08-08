@@ -67,8 +67,16 @@ live in `public/` (no external/PHP dependencies).
 - `lib/auth.ts`: `requireAdminPage()` (redirects, used in `app/admin/layout.tsx`)
   and `requireAdminAction()` (throws `UNAUTHORIZED`) — **every admin server
   action calls it**.
-- Dev admin: `admin@massage.local` / `massage@2026`. **No public sign-up** (back
-  office only); customers book without an account.
+- **No admin password lives in the repo.** `npm run seed` creates the admin only
+  when `SEED_ADMIN_PASSWORD` is set (min 10 chars, `SEED_ADMIN_EMAIL` defaults to
+  `admin@massage.local`); without it, it seeds services/therapists and tells you
+  to run `npm run admin:password`.
+- `npm run admin:password [-- --create] [email]` — set or rotate a back-office
+  password. Prompts with echo off; where there is no terminal it accepts
+  `ADMIN_INIT_PASSWORD` (env) or `--password=` / `--database-url=` flags, which
+  is how it is run from the Plesk command box. Touches only that User row —
+  unlike `seed`, which `deleteMany()`s services, therapists and bookings.
+- **No public sign-up** (back office only); customers book without an account.
 
 ## i18n
 

@@ -5,8 +5,12 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = "admin@massage.local";
-const ADMIN_PASSWORD = "massage@2026"; // เปลี่ยนก่อนใช้งานจริง
+// รหัสแอดมินมาจาก env เท่านั้น — ไม่เก็บ plaintext ไว้ในไฟล์ที่อยู่ใน git
+// ไม่ตั้ง SEED_ADMIN_PASSWORD = ข้ามการสร้าง admin (บริการ/หมอนวดยัง seed ปกติ)
+// แล้วไปตั้งรหัสด้วย `npm run admin:password -- --create` ซึ่งไม่ต้องพิมพ์รหัสลงคำสั่ง
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL?.trim() || "admin@massage.local";
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD?.trim();
+const MIN_PASSWORD_LENGTH = 10;
 
 /** 10 บริการ — ตรงกับเว็บต้นแบบ Massage Corner Sofia (price = EUR, duration = ตัวหลักที่จองได้) */
 const services = [
@@ -185,14 +189,26 @@ async function main() {
   }
   console.log(`✔ สร้างหมอนวด ${therapists.length} คน`);
 
-  // admin user (รหัสผ่าน hash ด้วย bcrypt)
-  const hashed = await bcrypt.hash(ADMIN_PASSWORD, 10);
-  await prisma.user.upsert({
-    where: { email: ADMIN_EMAIL },
-    update: { password: hashed },
-    create: { email: ADMIN_EMAIL, password: hashed, name: "Administrator", role: "ADMIN" },
-  });
-  console.log(`✔ admin user: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD} (hashed)`);
+  // admin user (รหัสผ่าน hash ด้วย bcrypt) — ทำเฉพาะเมื่อมี SEED_ADMIN_PASSWORD
+  if (!ADMIN_PASSWORD) {
+    console.log(
+      "• ข้ามการสร้าง admin (ไม่ได้ตั้ง SEED_ADMIN_PASSWORD)\n" +
+        `  ตั้งรหัสด้วย: npm run admin:password -- --create ${ADMIN_EMAIL}`
+    );
+  } else if (ADMIN_PASSWORD.length < MIN_PASSWORD_LENGTH) {
+    console.error(
+      `✖ SEED_ADMIN_PASSWORD สั้นเกินไป ต้องอย่างน้อย ${MIN_PASSWORD_LENGTH} ตัวอักษร — ข้ามการสร้าง admin`
+    );
+    process.exitCode = 1;
+  } else {
+    const hashed = await bcrypt.hash(ADMIN_PASSWORD, 10);
+    await prisma.user.upsert({
+      where: { email: ADMIN_EMAIL },
+      update: { password: hashed },
+      create: { email: ADMIN_EMAIL, password: hashed, name: "Administrator", role: "ADMIN" },
+    });
+    console.log(`✔ admin user: ${ADMIN_EMAIL} (รหัสจาก SEED_ADMIN_PASSWORD, hashed)`);
+  }
 }
 
 main()
