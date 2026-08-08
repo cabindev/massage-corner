@@ -4,8 +4,11 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   OPEN_MINUTES,
-  CLOSE_MINUTES,
+  LAST_SLOT_MINUTES,
   SLOT_STEP_MINUTES,
+  sofiaDateTimeToUTC,
+  sofiaDateKey,
+  sofiaHHMM,
 } from "@/lib/schedule-config";
 import { therapistColor } from "@/lib/therapist-color";
 import { createWalkin } from "./walkin-actions";
@@ -69,7 +72,7 @@ export default function BookingCalendar({
     y: today.getFullYear(),
     m: today.getMonth(),
   });
-  const [selected, setSelected] = useState(dateKey(today));
+  const [selected, setSelected] = useState(sofiaDateKey(today));
 
   // ── walk-in form state ──
   const [walkTime, setWalkTime] = useState<string | null>(null); // "HH:MM"
@@ -86,7 +89,7 @@ export default function BookingCalendar({
         ...b,
         startMs: s.getTime(),
         endMs: new Date(b.end).getTime(),
-        key: dateKey(s),
+        key: sofiaDateKey(s),
       };
     });
     const countByDay = new Map<string, number>();
@@ -106,7 +109,7 @@ export default function BookingCalendar({
     return arr;
   }, [view]);
 
-  const todayKey = dateKey(today);
+  const todayKey = sofiaDateKey(today);
   const [sy, sm, sd] = selected.split("-").map(Number);
 
   const dayBookings = parsed
@@ -114,8 +117,8 @@ export default function BookingCalendar({
     .sort((a, b) => a.startMs - b.startMs);
 
   const slots: { min: number; label: string; free: number }[] = [];
-  for (let min = OPEN_MINUTES; min < CLOSE_MINUTES; min += SLOT_STEP_MINUTES) {
-    const t = new Date(sy, sm - 1, sd, Math.floor(min / 60), min % 60).getTime();
+  for (let min = OPEN_MINUTES; min <= LAST_SLOT_MINUTES; min += SLOT_STEP_MINUTES) {
+    const t = sofiaDateTimeToUTC(selected, hhmm(min)).getTime();
     const occupied = parsed.filter(
       (b) =>
         b.status !== "CANCELLED" &&
@@ -162,8 +165,7 @@ export default function BookingCalendar({
       setWError("Please enter a service and customer name.");
       return;
     }
-    const [hh, mm] = walkTime.split(":").map(Number);
-    const dt = new Date(sy, sm - 1, sd, hh, mm);
+    const dt = sofiaDateTimeToUTC(selected, walkTime);
     setWError(null);
     startTransition(async () => {
       const res = await createWalkin({
@@ -253,7 +255,7 @@ export default function BookingCalendar({
                   className="flex items-center gap-3 rounded-lg bg-white px-3 py-2 ring-1 ring-leaf-50"
                 >
                   <span className="numeral w-12 shrink-0 text-sm font-semibold text-leaf-700">
-                    {hhmm(new Date(b.startMs).getHours() * 60 + new Date(b.startMs).getMinutes())}
+                    {sofiaHHMM(new Date(b.startMs))}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-bark">{b.customerName}</span>

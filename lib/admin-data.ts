@@ -1,4 +1,9 @@
 import { prisma } from "@/lib/prisma";
+import {
+  SHOP_TIMEZONE,
+  sofiaDateKey,
+  sofiaStartOfDay,
+} from "@/lib/schedule-config";
 
 export type BookingStatusValue =
   | "PENDING"
@@ -83,25 +88,16 @@ export type DashboardStats = {
 /** สถานะที่ยัง "มีชีวิต" — ยังไม่จบ/ไม่ถูกปฏิเสธ/ไม่ถูกยกเลิก */
 const LIVE_STATUSES: BookingStatusValue[] = ["PENDING", "CONFIRMED"];
 
+// ใช้ปฏิทินเวลาร้าน (Europe/Sofia) เสมอ — ไม่ใช้เวลาเครื่องเซิร์ฟเวอร์ ป้องกัน "วันนี้"/สถิติเพี้ยน
+// ถ้าเซิร์ฟเวอร์ไม่ได้ตั้ง TZ เป็นโซเฟีย
 function isSameLocalDate(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function startOfDay(d: Date) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
+  return sofiaDateKey(a) === sofiaDateKey(b);
 }
 
 export function buildStats(bookings: AdminBooking[]): DashboardStats {
   const now = new Date();
-  const today0 = startOfDay(now);
-  const weekAhead = new Date(today0);
-  weekAhead.setDate(weekAhead.getDate() + 7);
+  const today0 = sofiaStartOfDay(now);
+  const weekAhead = new Date(today0.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   const isActive = (b: AdminBooking) => LIVE_STATUSES.includes(b.status);
   const isLive = (b: AdminBooking) =>
@@ -110,13 +106,15 @@ export function buildStats(bookings: AdminBooking[]): DashboardStats {
   // กราฟ 7 วันล่าสุด (รวมวันนี้)
   const last7: DayPoint[] = [];
   for (let i = 6; i >= 0; i--) {
-    const day = new Date(today0);
-    day.setDate(day.getDate() - i);
+    const day = new Date(today0.getTime() - i * 24 * 60 * 60 * 1000);
     const count = bookings.filter(
       (b) => isLive(b) && isSameLocalDate(b.bookingTime, day)
     ).length;
     last7.push({
-      label: new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(day),
+      label: new Intl.DateTimeFormat("en-GB", {
+        weekday: "short",
+        timeZone: SHOP_TIMEZONE,
+      }).format(day),
       count,
       isToday: i === 0,
     });
@@ -166,24 +164,26 @@ export function buildStats(bookings: AdminBooking[]): DashboardStats {
   };
 }
 
-/** เป็นวันนี้หรือไม่ (ตามเวลาเครื่อง) */
+/** เป็นวันนี้หรือไม่ (ตามเวลาร้าน Europe/Sofia เสมอ) */
 export function isToday(d: Date): boolean {
   return isSameLocalDate(d, new Date());
 }
 
-/** จัดรูปแบบเวลาอย่างเดียว (HH:mm) */
+/** จัดรูปแบบเวลาอย่างเดียว (HH:mm) ตามเวลาร้าน Europe/Sofia เสมอ */
 export function formatTime(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: SHOP_TIMEZONE,
   }).format(d);
 }
 
-/** ตัวช่วยจัดรูปแบบวันเวลาแบบไทย */
+/** ตัวช่วยจัดรูปแบบวันเวลา ตามเวลาร้าน Europe/Sofia เสมอ */
 export function formatThaiDateTime(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: SHOP_TIMEZONE,
   }).format(d);
 }
 

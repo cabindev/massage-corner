@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { therapistColor } from "@/lib/therapist-color";
+import { SHOP_TIMEZONE, sofiaDateKey } from "@/lib/schedule-config";
 import { assignTherapist, updateBookingStatus, deleteBooking } from "./actions";
 import BookingFormModal, {
   emptyInitial,
@@ -60,11 +61,7 @@ const FILTERS = ["Today", "Upcoming", "Pending", "Done", "All"] as const;
 type Filter = (typeof FILTERS)[number];
 
 function sameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+  return sofiaDateKey(a) === sofiaDateKey(b);
 }
 function fmt(d: Date) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -72,6 +69,7 @@ function fmt(d: Date) {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: SHOP_TIMEZONE,
   }).format(d);
 }
 export default function BookingsTable({

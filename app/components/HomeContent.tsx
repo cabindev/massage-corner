@@ -243,8 +243,10 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
         {/* ═══ ABOUT ═══ */}
         <section id="about" className="scroll-mt-24 bg-[#e8dcc2]">
           <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
-          <div className="grid items-center gap-14 lg:grid-cols-2">
-            <div>
+          {/* ไม่ใช้ items-center: คอลัมน์ซ้ายเริ่มชิดบน แล้วยืดเต็มความสูงแถว
+              เพื่อให้รูป Vida ด้านล่างจบพอดีกับกล่องข้อความ Vida ทางขวา */}
+          <div className="grid gap-14 lg:grid-cols-2">
+            <div className="flex flex-col">
               {/* overlapping image collage + years badge */}
               <div className="relative mx-auto w-full max-w-2xl pb-2">
                 {/* back image (larger, top-left) */}
@@ -289,6 +291,31 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
                   </li>
                 ))}
               </ul>
+
+              {/* Vida — สองรูปวางทับซ้อน (สลับด้านกับ collage ด้านบน)
+                  ยืดเต็มพื้นที่ที่เหลือ ให้จบพอดีกับกล่องข้อความ Vida ทางขวา */}
+              <div className="relative mt-10 min-h-[26rem] flex-1">
+                {/* back — ภาพเต็มตัวในร้าน (ใหญ่กว่า, ชิดขวาบน) */}
+                <div className="absolute right-0 top-0 h-[88%] w-[64%] overflow-hidden rounded-[20px] ring-1 ring-gold/20">
+                  <Image
+                    src="/images/Vida/Vida_1.jpg"
+                    alt={t("about_vida_name")}
+                    fill
+                    sizes="(max-width: 1024px) 65vw, 30vw"
+                    className="object-cover object-[50%_5%] transition duration-700 hover:scale-105"
+                  />
+                </div>
+                {/* front — ภาพพอร์เทรตไหว้ ทับมุมซ้ายล่าง */}
+                <div className="absolute bottom-0 left-0 h-[74%] w-[46%] overflow-hidden rounded-[20px] shadow-2xl shadow-onyx/25 ring-[6px] ring-[#e8dcc2]">
+                  <Image
+                    src="/images/Vida/Vida_2.jpg"
+                    alt={t("about_vida_name")}
+                    fill
+                    sizes="(max-width: 1024px) 46vw, 22vw"
+                    className="object-cover object-[50%_35%] transition duration-700 hover:scale-105"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -331,7 +358,7 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
 
         {/* ═══ SERVICES ═══ */}
         <section id="services" className="scroll-mt-24 bg-[#e8dcc2]">
-          <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+          <div className="mx-auto max-w-7xl px-6 py-24 sm:py-28">
           <div className="flex flex-col items-center text-center">
             <SectionNumber n="03" />
             <div className="mt-4">
@@ -343,7 +370,8 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
             <p className="mt-4 max-w-xl text-bark/78">{t("serv_sub")}</p>
           </div>
 
-          <div className="mt-16 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+          {/* 10 บริการ — แถวละ 4 บนจอกว้าง, 3 บน laptop, 2 บน tablet */}
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {services.map((service) => {
               const l = localize(service);
               return (
@@ -351,13 +379,13 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
                   key={service.id}
                   className="group relative flex flex-col overflow-hidden rounded-[20px] bg-cream-50 ring-1 ring-gold/15 transition duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-leaf-800/10 hover:ring-gold/40"
                 >
-                  <div className="relative h-56 overflow-hidden">
+                  <div className="relative h-48 overflow-hidden">
                     {service.imageUrl ? (
                       <Image
                         src={service.imageUrl}
                         alt={l.name}
                         fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         className="object-cover transition duration-700 group-hover:scale-110"
                       />
                     ) : (
@@ -368,8 +396,8 @@ export default function HomeContent({ services }: { services: ServiceDTO[] }) {
                       {service.durationMinutes} min
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col p-7">
-                    <h3 className="font-display text-2xl font-medium text-leaf-700">
+                  <div className="flex flex-1 flex-col p-6">
+                    <h3 className="font-display text-xl font-medium leading-snug text-leaf-700">
                       {l.name}
                     </h3>
                     <p className="mt-3 flex-1 text-sm leading-relaxed text-bark/78">

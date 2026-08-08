@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { therapistColor } from "@/lib/therapist-color";
+import { sofiaDateTimeToUTC, sofiaHHMM, sofiaDateKey } from "@/lib/schedule-config";
 import { moveBooking } from "./actions";
 import {
   createTherapist,
@@ -47,11 +48,6 @@ function addDays(d: Date, n: number) {
 function dkey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
-  ).padStart(2, "0")}`;
-}
-function hhmm(d: Date) {
-  return `${String(d.getHours()).padStart(2, "0")}:${String(
-    d.getMinutes()
   ).padStart(2, "0")}`;
 }
 
@@ -216,7 +212,7 @@ export default function WeekSchedule({
     const map = new Map<string, (SchedBooking & { s: Date })[]>();
     for (const b of bookings) {
       const s = new Date(b.start);
-      const key = `${b.therapistId ?? "null"}|${dkey(s)}`;
+      const key = `${b.therapistId ?? "null"}|${sofiaDateKey(s)}`;
       const arr = map.get(key) ?? [];
       arr.push({ ...b, s });
       map.set(key, arr);
@@ -226,13 +222,13 @@ export default function WeekSchedule({
     return map;
   }, [bookings]);
 
-  const todayKey = dkey(new Date());
+  const todayKey = sofiaDateKey(new Date());
 
   // จำนวนคิวต่อวัน (จุดในปฏิทินจิ๋ว) + วันในสัปดาห์ที่กำลังดู (ไฮไลต์)
   const countByDay = useMemo(() => {
     const m = new Map<string, number>();
     for (const b of bookings) {
-      const k = dkey(new Date(b.start));
+      const k = sofiaDateKey(new Date(b.start));
       m.set(k, (m.get(k) ?? 0) + 1);
     }
     return m;
@@ -256,15 +252,9 @@ export default function WeekSchedule({
     const b = bookings.find((x) => x.id === id);
     if (!b) return;
     const s = new Date(b.start);
-    const ns = new Date(
-      day.getFullYear(),
-      day.getMonth(),
-      day.getDate(),
-      s.getHours(),
-      s.getMinutes()
-    );
+    const ns = sofiaDateTimeToUTC(dkey(day), sofiaHHMM(s));
     // ไม่เปลี่ยนอะไร → ข้าม
-    if (dkey(ns) === dkey(s) && (b.therapistId ?? null) === lane.id) return;
+    if (sofiaDateKey(ns) === sofiaDateKey(s) && (b.therapistId ?? null) === lane.id) return;
     setError(null);
     startTransition(async () => {
       const res = await moveBooking(id, ns.toISOString(), lane.id);
@@ -466,7 +456,7 @@ export default function WeekSchedule({
                               setOverKey(null);
                             }}
                             onDoubleClick={() => openEdit(b)}
-                            title={`${hhmm(b.s)} · ${b.customerName} · ${b.serviceName} — double-click to edit`}
+                            title={`${sofiaHHMM(b.s)} · ${b.customerName} · ${b.serviceName} — double-click to edit`}
                             className={`flex cursor-grab items-start gap-1.5 rounded-md bg-white px-2 py-1 text-[11px] leading-tight text-bark ring-1 ring-leaf-100 active:cursor-grabbing ${
                               b.status === "PENDING" ? "opacity-70" : ""
                             }`}
@@ -476,7 +466,7 @@ export default function WeekSchedule({
                               style={{ background: bc.base }}
                             />
                             <span className="min-w-0">
-                              <span className="numeral font-semibold">{hhmm(b.s)}</span>{" "}
+                              <span className="numeral font-semibold">{sofiaHHMM(b.s)}</span>{" "}
                               <span className="font-medium">{b.customerName}</span>
                               <span className="block truncate text-bark/68">
                                 {b.serviceName} · {b.durationMinutes}m

@@ -8,6 +8,7 @@ import {
   type AdminBooking,
 } from "@/lib/admin-data";
 import { getActiveTherapists } from "@/lib/therapists";
+import { SHOP_TIMEZONE } from "@/lib/schedule-config";
 import { getServices } from "@/lib/services";
 import { therapistColor } from "@/lib/therapist-color";
 import { getSession } from "@/lib/auth";
@@ -158,6 +159,7 @@ export default async function AdminDashboardPage() {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: SHOP_TIMEZONE,
   }).format(new Date());
 
 

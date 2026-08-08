@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createBookingAdmin, updateBooking } from "./actions";
+import { sofiaDateTimeToUTC, sofiaDateKey, sofiaHHMM } from "@/lib/schedule-config";
 
 export type ModalService = {
   id: string;
@@ -22,18 +23,13 @@ export type BookingFormInitial = {
   notes: string;
 };
 
-function pad(n: number) {
-  return String(n).padStart(2, "0");
-}
-
-/** ค่าเริ่มต้นสำหรับ "สร้างใหม่" (วันนี้ 10:00) */
+/** ค่าเริ่มต้นสำหรับ "สร้างใหม่" (วันนี้ตามเวลาร้าน 10:00) */
 export function emptyInitial(services: ModalService[]): BookingFormInitial {
-  const d = new Date();
   return {
     serviceId: services[0]?.id ?? "",
     customerName: "",
     phone: "",
-    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    date: sofiaDateKey(new Date()),
     time: "10:00",
     therapistId: "",
     notes: "",
@@ -54,8 +50,8 @@ export function initialFromBooking(b: {
     serviceId: b.serviceId,
     customerName: b.customerName,
     phone: b.phone === "—" || b.phone === "walk-in" ? "" : b.phone,
-    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
-    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+    date: sofiaDateKey(d),
+    time: sofiaHHMM(d),
     therapistId: b.therapistId ?? "",
     notes: b.notes ?? "",
   };
@@ -90,7 +86,7 @@ export default function BookingFormModal({
       setErr("Please fill in service, name, date and time.");
       return;
     }
-    const dt = new Date(`${form.date}T${form.time}:00`);
+    const dt = sofiaDateTimeToUTC(form.date, form.time);
     if (isNaN(dt.getTime())) {
       setErr("Invalid date/time.");
       return;

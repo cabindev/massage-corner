@@ -5,13 +5,16 @@ import type { Prisma } from "@prisma/client";
 export {
   OPEN_MINUTES,
   CLOSE_MINUTES,
+  LAST_SLOT_MINUTES,
   SLOT_STEP_MINUTES,
 } from "@/lib/schedule-config";
 import {
   OPEN_MINUTES,
   CLOSE_MINUTES,
+  LAST_SLOT_MINUTES,
   SLOT_STEP_MINUTES,
   isClosedDay,
+  minutesToHHMM as toHHMM,
 } from "@/lib/schedule-config";
 
 /** สถานะการจองที่ถือว่า "กินคิว" หมอ (ใช้คำนวณ capacity) */
@@ -28,16 +31,10 @@ export function overlapWhere(start: Date, end: Date): Prisma.BookingWhereInput {
 
 export type SlotInfo = { time: string; available: boolean };
 
-function toHHMM(totalMinutes: number): string {
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-/** รายการ slot ทั้งวันตามเวลาทำการ เช่น ["10:00","10:30",...] */
+/** รายการ slot ที่จองได้ทั้งวัน เช่น ["10:30","11:00",...,"18:00"] — คิวสุดท้าย 18:00 */
 export function buildDaySlots(): string[] {
   const slots: string[] = [];
-  for (let m = OPEN_MINUTES; m < CLOSE_MINUTES; m += SLOT_STEP_MINUTES) {
+  for (let m = OPEN_MINUTES; m <= LAST_SLOT_MINUTES; m += SLOT_STEP_MINUTES) {
     slots.push(toHHMM(m));
   }
   return slots;
@@ -85,7 +82,7 @@ export async function getDayAvailability(
   const now = new Date();
   const results: SlotInfo[] = [];
 
-  for (let m = OPEN_MINUTES; m < CLOSE_MINUTES; m += SLOT_STEP_MINUTES) {
+  for (let m = OPEN_MINUTES; m <= LAST_SLOT_MINUTES; m += SLOT_STEP_MINUTES) {
     const time = toHHMM(m);
     const start = new Date(`${dateStr}T${time}:00`);
     const end = new Date(start.getTime() + service.durationMinutes * 60_000);

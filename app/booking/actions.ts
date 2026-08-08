@@ -7,7 +7,15 @@ import {
   getDayAvailability,
   type SlotInfo,
 } from "@/lib/availability";
-import { isClosedDay } from "@/lib/schedule-config";
+import {
+  isClosedDay,
+  minutesToHHMM,
+  sofiaMinutesOfDay,
+  OPEN_MINUTES,
+  CLOSE_MINUTES,
+  LAST_SLOT_MINUTES,
+} from "@/lib/schedule-config";
+import { notifyLineNewBooking } from "@/lib/line-notify";
 
 /** ข้อมูลที่ฟอร์มส่งเข้ามา */
 export type BookingInput = {
@@ -73,14 +81,24 @@ export async function createBooking(
       message: "We're closed on Mondays. Please choose another day (Tue–Sun).",
     };
   }
+  // ปิดรับจองหลัง 18:00 — เช็กฝั่ง server ด้วย ไม่ใช่แค่ซ่อน slot ในฟอร์ม
+  const startMinutes = sofiaMinutesOfDay(startTime);
+  if (startMinutes < OPEN_MINUTES || startMinutes > LAST_SLOT_MINUTES) {
+    return {
+      ok: false,
+      message: `Bookings start between ${minutesToHHMM(
+        OPEN_MINUTES
+      )} and ${minutesToHHMM(LAST_SLOT_MINUTES)}. Please choose another time.`,
+    };
+  }
 
   try {
-    const bookingId = await prisma.$transaction(
+    const { bookingId, serviceName } = await prisma.$transaction(
       async (tx) => {
         // หาบริการ เพื่อรู้ระยะเวลา → คำนวณ endTime
         const service = await tx.service.findUnique({
           where: { id: serviceId },
-          select: { durationMinutes: true, isActive: true },
+          select: { name: true, durationMinutes: true, isActive: true },
         });
         if (!service || !service.isActive) {
           throw new BookingError("The selected service was not found or is unavailable.");
@@ -89,6 +107,17 @@ export async function createBooking(
         const endTime = new Date(
           startTime.getTime() + service.durationMinutes * 60_000
         );
+
+        // คิวต้องจบก่อนร้านปิด (เงื่อนไขเดียวกับตอนเช็ก slot ว่าง)
+        if (startMinutes + service.durationMinutes > CLOSE_MINUTES) {
+          throw new BookingError(
+            `This treatment takes ${
+              service.durationMinutes
+            } minutes and would end after we close at ${minutesToHHMM(
+              CLOSE_MINUTES
+            )}. Please choose an earlier time.`
+          );
+        }
 
         // capacity = จำนวนหมอที่ยังรับงาน
         const activeTherapists = await tx.therapist.count({
@@ -122,10 +151,17 @@ export async function createBooking(
           },
           select: { id: true },
         });
-        return booking.id;
+        return { bookingId: booking.id, serviceName: service.name };
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
     );
+
+    await notifyLineNewBooking({
+      customerName,
+      phone,
+      serviceName,
+      bookingTime: startTime,
+    });
 
     return { ok: true, bookingId };
   } catch (err) {

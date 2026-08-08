@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ServiceDTO } from "@/lib/services";
 import type { SlotInfo } from "@/lib/availability";
-import { isClosedDay } from "@/lib/schedule-config";
+import { isClosedDay, sofiaDateTimeToUTC } from "@/lib/schedule-config";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createBooking, getAvailability } from "./actions";
 
@@ -86,7 +86,7 @@ export default function BookingForm({
   }, [serviceId, date]);
 
   const hasAnyFree = slots.some((s) => s.available);
-  const closedDay = date ? isClosedDay(new Date(`${date}T00:00:00`)) : false;
+  const closedDay = date ? isClosedDay(sofiaDateTimeToUTC(date, "12:00")) : false;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,7 +97,7 @@ export default function BookingForm({
       return;
     }
 
-    const bookingTime = new Date(`${date}T${time}:00`);
+    const bookingTime = sofiaDateTimeToUTC(date, time);
     if (isNaN(bookingTime.getTime())) {
       setResult({ ok: false, message: t("f_required") });
       return;
