@@ -12,6 +12,7 @@ import { SHOP_TIMEZONE } from "@/lib/schedule-config";
 import { getServices } from "@/lib/services";
 import { therapistColor } from "@/lib/therapist-color";
 import { getSession } from "@/lib/auth";
+import { checkEmailNotifyHealth } from "@/lib/email-notify";
 import BookingCalendar, {
   type CalendarBooking,
 } from "./BookingCalendar";
@@ -125,11 +126,12 @@ const I = {
 };
 
 export default async function AdminDashboardPage() {
-  const [bookings, therapists, services, session] = await Promise.all([
+  const [bookings, therapists, services, session, emailHealth] = await Promise.all([
     getBookings(),
     getActiveTherapists(),
     getServices(),
     getSession(),
+    checkEmailNotifyHealth(),
   ]);
   const calendarServices = services.map((s) => ({
     id: s.id,
@@ -182,6 +184,44 @@ export default async function AdminDashboardPage() {
           Manage bookings
         </Link>
       </header>
+
+      {/* ── แจ้งเตือนเมื่อระบบส่งอีเมลล็อกอินไม่ผ่าน ──
+          การส่งจริงกลืน error ทิ้งเพื่อไม่ให้กระทบการจอง ที่นี่จึงเป็นที่เดียว
+          ที่เจ้าของร้านจะรู้ว่าแจ้งเตือนหยุดทำงาน */}
+      {emailHealth.status === "error" && (
+        <div
+          role="alert"
+          className="rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-300"
+        >
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+              <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" aria-hidden>
+                <path
+                  d="M12 8v5m0 3.5v.5M10.3 3.9 2.6 17.4A2 2 0 0 0 4.3 20.4h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+            <div className="min-w-0">
+              <p className="font-medium text-bark">
+                Email notifications are not working
+              </p>
+              <p className="mt-1 text-sm text-bark/78">
+                New bookings are still saved normally — customers are unaffected — but
+                no one is being emailed about them.
+              </p>
+              {emailHealth.hint && (
+                <p className="mt-2 text-sm text-bark/78">{emailHealth.hint}</p>
+              )}
+              <p className="mt-2 break-words font-mono text-xs text-bark/60">
+                {emailHealth.user} — {emailHealth.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
