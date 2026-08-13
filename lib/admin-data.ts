@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import {
   SHOP_TIMEZONE,
   sofiaDateKey,
+  sofiaDateTimeToUTC,
   sofiaStartOfDay,
 } from "@/lib/schedule-config";
 
@@ -103,10 +104,12 @@ export function buildStats(bookings: AdminBooking[]): DashboardStats {
   const isLive = (b: AdminBooking) =>
     b.status !== "CANCELLED" && b.status !== "REJECTED";
 
-  // กราฟ 7 วันล่าสุด (รวมวันนี้)
+  // กราฟ 7 วันล่าสุด (รวมวันนี้) — เดินย้อนหลังจาก "เที่ยงวัน" ตามเวลาร้าน
+  // ไม่ใช่เที่ยงคืน เพราะวันที่สลับ DST ยาว/สั้นไป 1 ชม. แล้วจะข้ามวันผิด
+  const noonToday = sofiaDateTimeToUTC(sofiaDateKey(now), "12:00");
   const last7: DayPoint[] = [];
   for (let i = 6; i >= 0; i--) {
-    const day = new Date(today0.getTime() - i * 24 * 60 * 60 * 1000);
+    const day = new Date(noonToday.getTime() - i * 24 * 60 * 60 * 1000);
     const count = bookings.filter(
       (b) => isLive(b) && isSameLocalDate(b.bookingTime, day)
     ).length;

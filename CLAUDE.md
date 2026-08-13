@@ -45,8 +45,20 @@ live in `public/` (no external/PHP dependencies).
 
 ## Booking & capacity (never overbook)
 
-- Business hours / slots: **10:00–21:00, every 30 min** — constants in
+- Business hours / slots: **10:30–19:00, every 30 min**; **last bookable slot
+  18:00** (`LAST_SLOT_MINUTES`) and a treatment must *end* by 19:00
+  (`CLOSE_MINUTES`). **Closed Mondays** (`isClosedDay`). Constants in
   `lib/schedule-config.ts` (client-safe, no Prisma).
+- **All wall-clock times are shop time — `Europe/Sofia` (`SHOP_TIMEZONE`)**,
+  never the server's or the visitor's zone; the DB stores UTC instants. Never
+  parse or format booking times with bare `new Date("YYYY-MM-DDTHH:mm")`,
+  `getHours()`, `getDay()` or `toLocale*()` without `timeZone` — those read the
+  local zone of whatever machine runs the code. Use the helpers in
+  `lib/schedule-config.ts` instead: `sofiaDateTimeToUTC` (date+time → instant),
+  `sofiaHHMM` / `sofiaMinutesOfDay` / `sofiaDateKey` / `sofiaStartOfDay`
+  (instant → shop calendar), `isClosedDay` / `isClosedDateKey`. For day
+  arithmetic don't add 24h to a midnight — DST days are 23h/25h; step from noon
+  or re-derive via `sofiaDateKey`.
 - Overlap/availability logic in `lib/availability.ts` (`overlapWhere`,
   `getDayAvailability`) — shared by the customer booking form and admin.
 - All create/move/update run inside `prisma.$transaction` at **Serializable**

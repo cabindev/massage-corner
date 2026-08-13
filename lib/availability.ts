@@ -13,8 +13,10 @@ import {
   CLOSE_MINUTES,
   LAST_SLOT_MINUTES,
   SLOT_STEP_MINUTES,
-  isClosedDay,
+  isClosedDateKey,
   minutesToHHMM as toHHMM,
+  sofiaDateKey,
+  sofiaDateTimeToUTC,
 } from "@/lib/schedule-config";
 
 /** สถานะการจองที่ถือว่า "กินคิว" หมอ (ใช้คำนวณ capacity) */
@@ -58,17 +60,20 @@ export async function getDayAvailability(
   });
   if (!service || !service.isActive) return [];
 
-  if (isClosedDay(new Date(`${dateStr}T00:00:00`))) return [];
+  if (isClosedDateKey(dateStr)) return [];
 
   const activeTherapists = await prisma.therapist.count({
     where: { isActive: true },
   });
 
   // ดึงการจองของทั้งวันมาครั้งเดียว แล้วคำนวณ overlap ใน JS (ลดจำนวน query)
-  const dayStart = new Date(`${dateStr}T00:00:00`);
+  // ขอบวันคิดตามเวลาร้าน (Europe/Sofia) — ไม่ใช่โซนเวลาของเครื่องเซิร์ฟเวอร์
+  const dayStart = sofiaDateTimeToUTC(dateStr, "00:00");
   if (isNaN(dayStart.getTime())) return [];
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
+  // +36 ชม. จากเที่ยงคืนย่อมตกกลางวันของวันถัดไปเสมอ (แม้วันสลับ DST ที่ยาว/สั้น 1 ชม.)
+  // → เอา date key ของวันถัดไป แล้วค่อยหาเที่ยงคืนของมัน
+  const nextDayKey = sofiaDateKey(new Date(dayStart.getTime() + 36 * 3_600_000));
+  const dayEnd = sofiaDateTimeToUTC(nextDayKey, "00:00");
 
   const dayBookings = await prisma.booking.findMany({
     where: {
@@ -84,7 +89,7 @@ export async function getDayAvailability(
 
   for (let m = OPEN_MINUTES; m <= LAST_SLOT_MINUTES; m += SLOT_STEP_MINUTES) {
     const time = toHHMM(m);
-    const start = new Date(`${dateStr}T${time}:00`);
+    const start = sofiaDateTimeToUTC(dateStr, time);
     const end = new Date(start.getTime() + service.durationMinutes * 60_000);
 
     const fitsWithinHours = m + service.durationMinutes <= CLOSE_MINUTES;

@@ -8,9 +8,18 @@ export const LAST_SLOT_MINUTES = 18 * 60;
 
 export const SHOP_TIMEZONE = "Europe/Sofia";
 
-/** ปิดวันจันทร์ — เปิดทำการอังคาร–อาทิตย์ */
+/**
+ * ปิดวันจันทร์ — เปิดทำการอังคาร–อาทิตย์ นับตาม "ปฏิทินเวลาร้าน" (Europe/Sofia)
+ * ไม่ใช่โซนเวลาของเครื่องที่รันโค้ด
+ */
 export function isClosedDay(date: Date): boolean {
-  return date.getDay() === 1; // Sun=0, Mon=1, ...
+  return isClosedDateKey(sofiaDateKey(date));
+}
+
+/** เหมือน isClosedDay แต่รับวันที่เป็น "YYYY-MM-DD" ตรงๆ (ไม่ต้องแปลงกลับไปกลับมา) */
+export function isClosedDateKey(dateStr: string): boolean {
+  // ใช้เที่ยงวัน UTC เป็นตัวแทนของวันนั้น — กัน off-by-one ตอนสลับ DST
+  return new Date(`${dateStr}T12:00:00.000Z`).getUTCDay() === 1; // Sun=0, Mon=1, ...
 }
 
 /**
