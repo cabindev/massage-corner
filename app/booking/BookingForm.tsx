@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ServiceDTO } from "@/lib/services";
-import type { SlotInfo } from "@/lib/availability";
+import type { SlotInfo, SlotUnavailableReason } from "@/lib/availability";
 import { isClosedDateKey, sofiaDateTimeToUTC } from "@/lib/schedule-config";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createBooking, getAvailability } from "./actions";
@@ -14,6 +14,13 @@ function todayStr() {
     d.getDate()
   ).padStart(2, "0")}`;
 }
+
+/** ป้ายท้าย slot ที่จองไม่ได้ — คนละคำตามเหตุผล ไม่เหมารวมเป็น "Full" */
+const SLOT_REASON_KEY: Record<SlotUnavailableReason, "slot_past" | "slot_late" | "slot_full"> = {
+  past: "slot_past",
+  hours: "slot_late",
+  full: "slot_full",
+};
 
 const inputClass =
   "w-full rounded-xl bg-cream-50 px-4 py-3 text-bark ring-1 ring-gold/20 outline-none transition placeholder:text-bark/40 focus:ring-2 focus:ring-leaf-500";
@@ -86,6 +93,8 @@ export default function BookingForm({
   }, [serviceId, date]);
 
   const hasAnyFree = slots.some((s) => s.available);
+  // เต็มเพราะเลยเวลาล้วนๆ — บอกให้เลือกวันอื่นดีกว่าบอกว่า "คิวเต็ม"
+  const allPast = !hasAnyFree && slots.every((s) => s.reason === "past");
   const closedDay = date ? isClosedDateKey(date) : false;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -254,7 +263,7 @@ export default function BookingForm({
               {slots.map((s) => (
                 <option key={s.time} value={s.time} disabled={!s.available}>
                   {s.time}
-                  {!s.available ? ` — ${t("slot_full")}` : ""}
+                  {s.available ? "" : ` — ${t(SLOT_REASON_KEY[s.reason ?? "full"])}`}
                 </option>
               ))}
             </select>
@@ -262,7 +271,9 @@ export default function BookingForm({
               <p className="mt-2 text-sm text-amber-600">{t("day_closed")}</p>
             )}
             {date && !loadingSlots && !closedDay && slots.length > 0 && !hasAnyFree && (
-              <p className="mt-2 text-sm text-amber-600">{t("slot_all_full")}</p>
+              <p className="mt-2 text-sm text-amber-600">
+                {t(allPast ? "slot_all_past" : "slot_all_full")}
+              </p>
             )}
           </div>
         </div>

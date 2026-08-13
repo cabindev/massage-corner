@@ -111,7 +111,10 @@ export const dict = {
     slot_loading: "Checking availability…",
     slot_pick: "Select time…",
     slot_full: "Full",
+    slot_past: "Past",
+    slot_late: "Too late",
     slot_all_full: "All time slots are full today. Please pick another date.",
+    slot_all_past: "Today's slots have already passed. Please pick another date.",
     day_closed: "We're closed on Mondays. Please choose Tuesday–Sunday.",
 
     succ_title: "Booking Received!",
@@ -239,7 +242,10 @@ export const dict = {
     slot_loading: "Проверка на свободни часове…",
     slot_pick: "Изберете час…",
     slot_full: "Зает",
+    slot_past: "Изминал",
+    slot_late: "Няма да се побере",
     slot_all_full: "Всички часове за днес са заети. Моля, изберете друга дата.",
+    slot_all_past: "Часовете за днес вече изминаха. Моля, изберете друга дата.",
     day_closed: "Затворено сме в понеделник. Моля, изберете вторник – неделя.",
 
     succ_title: "Резервацията е получена!",

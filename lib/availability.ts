@@ -31,7 +31,24 @@ export function overlapWhere(start: Date, end: Date): Prisma.BookingWhereInput {
   };
 }
 
-export type SlotInfo = { time: string; available: boolean };
+/**
+ * เหตุผลที่ slot จองไม่ได้ — แยกไว้เพื่อให้ฟอร์มบอกลูกค้าได้ตรง
+ * "เลยเวลาไปแล้ว" ไม่เหมือน "คิวเต็ม": ถ้าขึ้น Full ทั้งคู่ คนที่เปิดดูตอนบ่าย
+ * จะนึกว่าร้านคิวแน่นทั้งวัน ทั้งที่แค่เปิดดูสาย
+ */
+export type SlotUnavailableReason =
+  /** เวลาผ่านไปแล้ว */
+  | "past"
+  /** หมอไม่ว่าง (คิวทับ ≥ จำนวนหมอ) หรือไม่มีหมอ active */
+  | "full"
+  /** เริ่มทันแต่คิวจะจบหลังร้านปิด */
+  | "hours";
+
+export type SlotInfo = {
+  time: string;
+  available: boolean;
+  reason?: SlotUnavailableReason;
+};
 
 /** รายการ slot ที่จองได้ทั้งวัน เช่น ["10:30","11:00",...,"18:00"] — คิวสุดท้าย 18:00 */
 export function buildDaySlots(): string[] {
@@ -95,14 +112,19 @@ export async function getDayAvailability(
     const fitsWithinHours = m + service.durationMinutes <= CLOSE_MINUTES;
     const inFuture = start.getTime() > now.getTime();
 
-    let available = activeTherapists > 0 && fitsWithinHours && inFuture;
-    if (available) {
+    // เรียงตามลำดับที่ลูกค้าควรได้ยินก่อน: เลยเวลา → ไม่ทันปิดร้าน → คิวเต็ม
+    let reason: SlotUnavailableReason | undefined;
+    if (!inFuture) reason = "past";
+    else if (!fitsWithinHours) reason = "hours";
+    else if (activeTherapists === 0) reason = "full";
+    else {
       const overlap = dayBookings.filter(
         (b) => b.bookingTime < end && b.endTime > start
       ).length;
-      available = overlap < activeTherapists;
+      if (overlap >= activeTherapists) reason = "full";
     }
-    results.push({ time, available });
+
+    results.push(reason ? { time, available: false, reason } : { time, available: true });
   }
 
   return results;
