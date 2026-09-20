@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import nodemailer from "nodemailer";
 import { SHOP_TIMEZONE } from "@/lib/schedule-config";
 
@@ -9,7 +11,7 @@ export type NewBookingDetails = {
   notes?: string | null;
 };
 
-/** วันเวลาแบบอ่านง่ายตามเวลาร้าน เช่น "Tue, 11 Aug 2026, 15:30" */
+/** วันเวลาแบบอ่านง่ายตามเวลาร้าน เช่น "Tue, 11 Aug 2026, 15:30" — ใช้ในหัวเรื่องเมล */
 function formatWhen(date: Date): string {
   return date.toLocaleString("en-GB", {
     timeZone: SHOP_TIMEZONE,
@@ -22,6 +24,21 @@ function formatWhen(date: Date): string {
   });
 }
 
+/**
+ * แยกวันเวลาเป็นชิ้น ๆ เพื่อจัดหน้าในการ์ด (เวลาตัวใหญ่ วันตัวเล็ก)
+ * ทุกชิ้นตรึงด้วยโซนของร้าน — ห้ามใช้ getHours/getDay ตรง ๆ เพราะจะอ่านโซนของ
+ * เครื่องที่รันโค้ด ซึ่งบน Plesk ไม่ใช่ Europe/Sofia
+ */
+function formatWhenParts(date: Date) {
+  const part = (options: Intl.DateTimeFormatOptions) =>
+    date.toLocaleString("en-GB", { timeZone: SHOP_TIMEZONE, ...options });
+  return {
+    time: part({ hour: "2-digit", minute: "2-digit", hour12: false }),
+    date: part({ weekday: "long", day: "numeric", month: "long" }),
+    year: part({ year: "numeric" }),
+  };
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -30,38 +47,178 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildHtml(rows: [string, string][]): string {
-  const cells = rows
-    .map(
-      ([label, value]) => `
+/** tel: รับแค่ตัวเลขกับ + — ตัดวงเล็บ ขีด เว้นวรรคที่ลูกค้าพิมพ์มาทิ้ง */
+function telHref(phone: string): string {
+  return phone.replace(/[^\d+]/g, "");
+}
+
+/**
+ * ลิงก์เข้าหลังบ้าน — ไม่ตั้ง NEXTAUTH_URL ก็แค่ไม่มีปุ่ม (เมลยังอ่านรู้เรื่อง)
+ * ตัด / ท้าย URL ทิ้งก่อน กัน // ซ้อนเวลาต่อ path
+ */
+function dashboardUrl(): string | null {
+  const base = process.env.NEXTAUTH_URL?.trim().replace(/\/+$/, "");
+  return base ? `${base}/admin/bookings` : null;
+}
+
+/* ── ชิ้นส่วนสไตล์ที่ใช้ซ้ำ — พาเลต "Emerald & Champagne" เดียวกับหน้าเว็บ ── */
+const ONYX = "#071210";
+const LEAF = "#184838";
+const LEAF_SOFT = "#4a8068";
+const GOLD = "#b08828";
+const GOLD_SOFT = "#d4b878";
+const PAPER = "#ede3d0";
+const PAPER_DEEP = "#ddd0b6";
+const HAIRLINE = "#cabb98";
+const INK = "#121c18";
+const INK_MUTED = "#6b6257";
+/* Cormorant โหลดในโปรแกรมอ่านเมลไม่ได้ — Georgia เป็นตัวแทนที่หน้าตาใกล้สุด */
+const SERIF = "Georgia,'Times New Roman',serif";
+const SANS =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+/** แถวรายละเอียด 1 บรรทัด — label ตัวเล็กซ้าย ค่าตัวใหญ่ขวา */
+function detailRow(label: string, valueHtml: string, last = false): string {
+  const border = last ? "" : `border-bottom:1px solid ${HAIRLINE};`;
+  return `
       <tr>
-        <td style="padding:10px 16px;border-bottom:1px solid #e6dcc6;color:#6b6257;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;vertical-align:top">${escapeHtml(
-          label
-        )}</td>
-        <td style="padding:10px 16px;border-bottom:1px solid #e6dcc6;color:#1d1a16;font-size:15px">${escapeHtml(
-          value
-        )}</td>
-      </tr>`
-    )
-    .join("");
+        <td style="padding:14px 0 13px;${border}font-family:${SANS};font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:${INK_MUTED};white-space:nowrap;vertical-align:middle;width:96px">${escapeHtml(
+    label
+  )}</td>
+        <td style="padding:14px 0 13px;${border}font-family:${SANS};font-size:16px;color:${INK};vertical-align:middle;text-align:right">${valueHtml}</td>
+      </tr>`;
+}
+
+
+/**
+ * โลโก้ฝังไปกับเมลแบบ CID (ไม่ใช่ลิงก์รูป) — โปรแกรมอ่านเมลส่วนใหญ่บล็อกรูป
+ * จากภายนอกจนกว่าผู้ใช้จะกด "แสดงรูปภาพ" แต่รูปที่แนบมาในเมลจะโชว์เลย
+ * แปลงเป็น PNG เพราะ Outlook บน Windows เรนเดอร์ด้วยเอนจินของ Word ซึ่งอ่าน WebP ไม่ออก
+ */
+const LOGO_CID = "shop-logo";
+const LOGO_PATH = path.join(process.cwd(), "public", "logo-email.png");
+let logoExists: boolean | null = null;
+function hasLogo(): boolean {
+  // เช็คดิสก์ครั้งเดียวพอ — ไฟล์นี้มากับ build ไม่ได้ถูกสร้างทีหลัง
+  if (logoExists === null) logoExists = fs.existsSync(LOGO_PATH);
+  return logoExists;
+}
+
+function buildHtml(details: NewBookingDetails): string {
+  const when = formatWhenParts(details.bookingTime);
+  const href = dashboardUrl();
+
+  // ข้อความตัวอย่างในกล่องขาเข้า — ถ้าไม่ใส่ Gmail จะดึงคำแรกในเมลมาโชว์แทน
+  const preheader = escapeHtml(
+    `${details.customerName} · ${details.serviceName} · ${when.date}, ${when.time}`
+  );
+
+  const logo = hasLogo()
+    ? `<img src="cid:${LOGO_CID}" alt="Massage Corner Sofia" width="146" style="display:block;margin:0 auto;width:146px;max-width:146px;height:auto;border:0">`
+    : `<p style="margin:0;font-family:${SERIF};font-size:22px;color:${LEAF}">Massage Corner Sofia</p>`;
+
+  const rows =
+    detailRow(
+      "Customer",
+      `<strong style="font-weight:600">${escapeHtml(
+        details.customerName
+      )}</strong>`
+    ) +
+    detailRow(
+      "Phone",
+      `<a href="tel:${escapeHtml(
+        telHref(details.phone)
+      )}" style="color:${LEAF};text-decoration:none;font-weight:600;border-bottom:1px solid ${GOLD_SOFT}">${escapeHtml(
+        details.phone
+      )}</a>`
+    ) +
+    detailRow("Treatment", escapeHtml(details.serviceName), true);
+
+  const notes = details.notes
+    ? `
+            <tr><td style="padding:2px 0 0">
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${PAPER_DEEP};border-left:3px solid ${GOLD}">
+                <tr><td style="padding:14px 16px">
+                  <p style="margin:0 0 5px;font-family:${SANS};font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:${INK_MUTED}">Notes from customer</p>
+                  <p style="margin:0;font-family:${SANS};font-size:15px;line-height:1.55;color:${INK}">${escapeHtml(
+        details.notes
+      )}</p>
+                </td></tr>
+              </table>
+            </td></tr>`
+    : "";
+
+  const cta = href
+    ? `
+            <tr><td style="padding:26px 0 2px" align="center">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto">
+                <tr><td style="background:${LEAF};border-radius:999px">
+                  <a href="${escapeHtml(
+                    href
+                  )}" style="display:block;padding:14px 34px;font-family:${SANS};font-size:14px;font-weight:600;letter-spacing:.04em;color:${PAPER};text-decoration:none">Confirm in dashboard &rarr;</a>
+                </td></tr>
+              </table>
+            </td></tr>`
+    : "";
 
   return `<!doctype html>
-<html><body style="margin:0;padding:24px;background:#e8dcc2;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-  <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ede3d0;border-radius:16px;overflow:hidden;border:1px solid #d8c9a6">
-    <tr>
-      <td style="padding:22px 24px;background:#071210">
-        <p style="margin:0;color:#b08828;font-size:11px;letter-spacing:.16em;text-transform:uppercase">Massage Corner Sofia</p>
-        <h1 style="margin:6px 0 0;color:#ede3d0;font-size:22px;font-weight:500">New booking received</h1>
-      </td>
-    </tr>
-    <tr><td><table role="presentation" cellpadding="0" cellspacing="0" width="100%">${cells}</table></td></tr>
-    <tr>
-      <td style="padding:16px 24px;color:#6b6257;font-size:12px">
-        Status is <strong>PENDING</strong> — confirm it in the admin dashboard.
-      </td>
-    </tr>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<title>New booking</title>
+</head>
+<body style="margin:0;padding:0;background:${PAPER_DEEP};-webkit-font-smoothing:antialiased">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all">${preheader}</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all">&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${PAPER_DEEP}">
+    <tr><td align="center" style="padding:32px 16px">
+
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;background:${PAPER};border-radius:18px;overflow:hidden">
+
+        <!-- โลโก้: ลายเส้นสีแทนบนพื้นใส ต้องอยู่บนพื้นครีมถึงจะอ่านออก -->
+        <tr><td align="center" style="padding:30px 28px 24px;background:${PAPER}">
+          ${logo}
+        </td></tr>
+
+        <!-- เวลานัด: แถบเข้มเต็มความกว้าง เป็นจุดที่ตาไปลงก่อนเสมอ -->
+        <tr><td align="center" style="padding:26px 28px 28px;background:${ONYX}">
+          <p style="margin:0 0 14px;font-family:${SANS};font-size:9px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:${GOLD}">New booking</p>
+          <p style="margin:0;font-family:${SERIF};font-size:48px;line-height:1;letter-spacing:.01em;color:${PAPER}">${escapeHtml(
+    when.time
+  )}</p>
+          <p style="margin:13px 0 0;font-family:${SANS};font-size:15px;color:${LEAF_SOFT}">${escapeHtml(
+    when.date
+  )} ${escapeHtml(when.year)}</p>
+          <p style="margin:18px 0 0">
+            <span style="display:inline-block;padding:6px 14px;border:1px solid ${GOLD};border-radius:999px;font-family:${SANS};font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:${GOLD_SOFT}">Pending</span>
+          </p>
+        </td></tr>
+
+        <!-- รายละเอียดลูกค้า -->
+        <tr><td style="padding:6px 28px 28px">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%">${rows}</table>
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%">${notes}${cta}</table>
+        </td></tr>
+
+        <!-- ท้ายเมล -->
+        <tr><td style="padding:16px 28px;background:${PAPER_DEEP};border-top:1px solid ${HAIRLINE}">
+          <p style="margin:0;font-family:${SANS};font-size:11px;line-height:1.6;color:${INK_MUTED};text-align:center">
+            Automatic notification &middot; times shown in shop time (${escapeHtml(
+              SHOP_TIMEZONE
+            )})
+          </p>
+        </td></tr>
+
+      </table>
+
+    </td></tr>
   </table>
-</body></html>`;
+</body>
+</html>`;
 }
 
 /**
@@ -189,7 +346,11 @@ export async function notifyEmailNewBooking(details: NewBookingDetails) {
       to: recipients,
       subject: `New booking — ${details.customerName} · ${when}`,
       text: rows.map(([label, value]) => `${label}: ${value}`).join("\n"),
-      html: buildHtml(rows),
+      html: buildHtml(details),
+      // แนบโลโก้เฉพาะตอนที่ไฟล์มีจริง ไม่งั้นจะได้รูปแตกแทนที่จะเป็นข้อความสำรอง
+      attachments: hasLogo()
+        ? [{ filename: "logo.png", path: LOGO_PATH, cid: LOGO_CID }]
+        : undefined,
     });
   } catch (err) {
     console.error("[notifyEmailNewBooking]", err);
