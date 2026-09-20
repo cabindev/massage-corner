@@ -67,6 +67,7 @@ const LEAF = "#184838";
 const LEAF_SOFT = "#4a8068";
 const GOLD = "#b08828";
 const GOLD_SOFT = "#d4b878";
+const GOLD_DEEP = "#7a5c18"; /* ทองเข้มพอให้ตัวอักษรเล็กอ่านออกบนพื้นแทน */
 const PAPER = "#ede3d0";
 const PAPER_DEEP = "#ddd0b6";
 const HAIRLINE = "#cabb98";
@@ -137,9 +138,9 @@ function buildHtml(details: NewBookingDetails): string {
   const notes = details.notes
     ? `
             <tr><td style="padding:2px 0 0">
-              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${PAPER_DEEP};border-left:3px solid ${GOLD}">
-                <tr><td style="padding:14px 16px">
-                  <p style="margin:0 0 5px;font-family:${SANS};font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:${INK_MUTED}">Notes from customer</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${PAPER_DEEP};border:1px solid ${HAIRLINE};border-radius:10px">
+                <tr><td style="padding:15px 17px">
+                  <p style="margin:0 0 6px;font-family:${SANS};font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:${GOLD_DEEP}">Notes from customer</p>
                   <p style="margin:0;font-family:${SANS};font-size:15px;line-height:1.55;color:${INK}">${escapeHtml(
         details.notes
       )}</p>
