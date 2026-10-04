@@ -4,17 +4,20 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createBookingAdmin, updateBooking } from "./actions";
 import { sofiaDateTimeToUTC, sofiaDateKey, sofiaHHMM } from "@/lib/schedule-config";
+import { durationOptions, type PriceTier } from "@/lib/price-tiers";
 
 export type ModalService = {
   id: string;
   name: string;
   durationMinutes: number;
   price: number;
+  priceTiers: PriceTier[] | null;
 };
 export type ModalTherapist = { id: string; name: string };
 
 export type BookingFormInitial = {
   serviceId: string;
+  durationMinutes: number;
   customerName: string;
   phone: string;
   date: string; // YYYY-MM-DD
@@ -27,6 +30,7 @@ export type BookingFormInitial = {
 export function emptyInitial(services: ModalService[]): BookingFormInitial {
   return {
     serviceId: services[0]?.id ?? "",
+    durationMinutes: services[0]?.durationMinutes ?? 60,
     customerName: "",
     phone: "",
     date: sofiaDateKey(new Date()),
@@ -39,6 +43,7 @@ export function emptyInitial(services: ModalService[]): BookingFormInitial {
 /** สร้าง initial จาก booking ที่มีอยู่ (สำหรับแก้ไข) */
 export function initialFromBooking(b: {
   serviceId: string;
+  durationMinutes: number;
   customerName: string;
   phone: string;
   bookingTimeISO: string;
@@ -48,6 +53,7 @@ export function initialFromBooking(b: {
   const d = new Date(b.bookingTimeISO);
   return {
     serviceId: b.serviceId,
+    durationMinutes: b.durationMinutes,
     customerName: b.customerName,
     phone: b.phone === "—" || b.phone === "walk-in" ? "" : b.phone,
     date: sofiaDateKey(d),
@@ -77,8 +83,16 @@ export default function BookingFormModal({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [form, setForm] = useState<BookingFormInitial>(initial);
+  const [form, setForm] = useState<BookingFormInitial>(() => {
+    // คิวเก่าที่ความยาวไม่อยู่ในรายการแล้ว → ใช้ความยาวหลักของบริการแทน
+    const svc = services.find((s) => s.id === initial.serviceId);
+    if (svc && !durationOptions(svc).some((o) => o.minutes === initial.durationMinutes))
+      return { ...initial, durationMinutes: svc.durationMinutes };
+    return initial;
+  });
   const [err, setErr] = useState<string | null>(null);
+  const selectedService = services.find((s) => s.id === form.serviceId);
+  const lengths = selectedService ? durationOptions(selectedService) : [];
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,6 +108,7 @@ export default function BookingFormModal({
     setErr(null);
     const payload = {
       serviceId: form.serviceId,
+      durationMinutes: form.durationMinutes,
       customerName: form.customerName.trim(),
       phone: form.phone.trim() || undefined,
       therapistId: form.therapistId || null,
@@ -134,9 +149,25 @@ export default function BookingFormModal({
         <div className="mt-5 space-y-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-bark/60">Service</label>
-            <select value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })} className={fieldCls} required>
+            <select
+              value={form.serviceId}
+              onChange={(e) => {
+                const svc = services.find((s) => s.id === e.target.value);
+                setForm({ ...form, serviceId: e.target.value, durationMinutes: svc?.durationMinutes ?? form.durationMinutes });
+              }}
+              className={fieldCls}
+              required
+            >
               {services.map((s) => (
-                <option key={s.id} value={s.id}>{s.name} · {s.durationMinutes}m · {s.price} €</option>
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-bark/60">Length</label>
+            <select value={form.durationMinutes} onChange={(e) => setForm({ ...form, durationMinutes: Number(e.target.value) })} className={fieldCls} required>
+              {lengths.map((o) => (
+                <option key={o.minutes} value={o.minutes}>{o.minutes} min · {o.price} €</option>
               ))}
             </select>
           </div>

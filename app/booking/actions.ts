@@ -16,6 +16,7 @@ import {
   LAST_SLOT_MINUTES,
 } from "@/lib/schedule-config";
 import { notifyEmailNewBooking } from "@/lib/email-notify";
+import { pickDuration } from "@/lib/price-tiers";
 import { after } from "next/server";
 
 /** ข้อมูลที่ฟอร์มส่งเข้ามา */
@@ -24,6 +25,7 @@ export type BookingInput = {
   customerName: string;
   phone: string;
   bookingTime: string; // ISO string (วัน+เวลาที่ลูกค้าเลือก)
+  durationMinutes?: number; // 60/90/120… จาก priceTiers — ไม่ส่ง = ระยะเวลาหลักของบริการ
   notes?: string;
 };
 
@@ -38,10 +40,11 @@ export type BookingResult =
  */
 export async function getAvailability(
   serviceId: string,
-  dateStr: string
+  dateStr: string,
+  minutes?: number
 ): Promise<SlotInfo[]> {
   if (!serviceId?.trim() || !dateStr?.trim()) return [];
-  return getDayAvailability(serviceId.trim(), dateStr.trim());
+  return getDayAvailability(serviceId.trim(), dateStr.trim(), minutes);
 }
 
 /**
@@ -94,27 +97,38 @@ export async function createBooking(
   }
 
   try {
-    const { bookingId, serviceName } = await prisma.$transaction(
+    const { bookingId, serviceLabel } = await prisma.$transaction(
       async (tx) => {
         // หาบริการ เพื่อรู้ระยะเวลา → คำนวณ endTime
         const service = await tx.service.findUnique({
           where: { id: serviceId },
-          select: { name: true, durationMinutes: true, isActive: true },
+          select: {
+            name: true,
+            durationMinutes: true,
+            price: true,
+            priceTiers: true,
+            isActive: true,
+          },
         });
         if (!service || !service.isActive) {
           throw new BookingError("The selected service was not found or is unavailable.");
         }
 
-        const endTime = new Date(
-          startTime.getTime() + service.durationMinutes * 60_000
+        const option = pickDuration(
+          { ...service, price: Number(service.price) },
+          input.durationMinutes
         );
+        if (!option) {
+          throw new BookingError("Please choose a valid treatment length.");
+        }
+        const duration = option.minutes;
+
+        const endTime = new Date(startTime.getTime() + duration * 60_000);
 
         // คิวต้องจบก่อนร้านปิด (เงื่อนไขเดียวกับตอนเช็ก slot ว่าง)
-        if (startMinutes + service.durationMinutes > CLOSE_MINUTES) {
+        if (startMinutes + duration > CLOSE_MINUTES) {
           throw new BookingError(
-            `This treatment takes ${
-              service.durationMinutes
-            } minutes and would end after we close at ${minutesToHHMM(
+            `This treatment takes ${duration} minutes and would end after we close at ${minutesToHHMM(
               CLOSE_MINUTES
             )}. Please choose an earlier time.`
           );
@@ -152,7 +166,10 @@ export async function createBooking(
           },
           select: { id: true },
         });
-        return { bookingId: booking.id, serviceName: service.name };
+        return {
+          bookingId: booking.id,
+          serviceLabel: `${service.name} · ${duration} min · ${option.price} €`,
+        };
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
     );
@@ -162,7 +179,7 @@ export async function createBooking(
       notifyEmailNewBooking({
         customerName,
         phone,
-        serviceName,
+        serviceName: serviceLabel,
         bookingTime: startTime,
         notes,
       })

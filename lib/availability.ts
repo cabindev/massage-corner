@@ -8,6 +8,7 @@ export {
   LAST_SLOT_MINUTES,
   SLOT_STEP_MINUTES,
 } from "@/lib/schedule-config";
+import { pickDuration } from "@/lib/price-tiers";
 import {
   OPEN_MINUTES,
   CLOSE_MINUTES,
@@ -69,13 +70,21 @@ export function buildDaySlots(): string[] {
  */
 export async function getDayAvailability(
   serviceId: string,
-  dateStr: string
+  dateStr: string,
+  /** ระยะเวลาที่ลูกค้าเลือก (60/90/120…) — ไม่ระบุ = ระยะเวลาหลักของบริการ */
+  minutes?: number | null
 ): Promise<SlotInfo[]> {
   const service = await prisma.service.findUnique({
     where: { id: serviceId },
-    select: { durationMinutes: true, isActive: true },
+    select: { durationMinutes: true, price: true, priceTiers: true, isActive: true },
   });
   if (!service || !service.isActive) return [];
+  const option = pickDuration(
+    { ...service, price: Number(service.price) },
+    minutes
+  );
+  if (!option) return [];
+  const duration = option.minutes;
 
   if (isClosedDateKey(dateStr)) return [];
 
@@ -107,9 +116,9 @@ export async function getDayAvailability(
   for (let m = OPEN_MINUTES; m <= LAST_SLOT_MINUTES; m += SLOT_STEP_MINUTES) {
     const time = toHHMM(m);
     const start = sofiaDateTimeToUTC(dateStr, time);
-    const end = new Date(start.getTime() + service.durationMinutes * 60_000);
+    const end = new Date(start.getTime() + duration * 60_000);
 
-    const fitsWithinHours = m + service.durationMinutes <= CLOSE_MINUTES;
+    const fitsWithinHours = m + duration <= CLOSE_MINUTES;
     const inFuture = start.getTime() > now.getTime();
 
     // เรียงตามลำดับที่ลูกค้าควรได้ยินก่อน: เลยเวลา → ไม่ทันปิดร้าน → คิวเต็ม

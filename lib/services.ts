@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
-/** ช่วงราคาแต่ละความยาวเวลา (price list) */
-export type PriceTier = { minutes: number; price: number };
+import type { PriceTier } from "@/lib/price-tiers";
+
+export type { PriceTier };
 
 /** รูปแบบข้อมูลบริการที่ส่งให้ฝั่ง UI (price แปลงเป็น number แล้ว) — รองรับ EN/BG */
 export type ServiceDTO = {

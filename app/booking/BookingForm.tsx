@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ServiceDTO } from "@/lib/services";
 import type { SlotInfo, SlotUnavailableReason } from "@/lib/availability";
 import { isClosedDateKey, sofiaDateTimeToUTC } from "@/lib/schedule-config";
+import { durationOptions } from "@/lib/price-tiers";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createBooking, getAvailability } from "./actions";
 
@@ -51,6 +52,9 @@ export default function BookingForm({
     "";
 
   const [serviceId, setServiceId] = useState(defaultService);
+  const [minutes, setMinutes] = useState(
+    services.find((s) => s.id === defaultService)?.durationMinutes ?? 60
+  );
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState("");
@@ -62,6 +66,7 @@ export default function BookingForm({
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   const selected = services.find((s) => s.id === serviceId);
+  const lengths = selected ? durationOptions(selected) : [];
 
   // ตั้งวันที่เริ่มต้นเป็น "วันนี้" หลัง mount (ทำฝั่ง client เท่านั้น กัน hydration mismatch)
   useEffect(() => {
@@ -76,7 +81,7 @@ export default function BookingForm({
     }
     let cancelled = false;
     setLoadingSlots(true);
-    getAvailability(serviceId, date)
+    getAvailability(serviceId, date, minutes)
       .then((data) => {
         if (cancelled) return;
         setSlots(data);
@@ -90,7 +95,7 @@ export default function BookingForm({
     return () => {
       cancelled = true;
     };
-  }, [serviceId, date]);
+  }, [serviceId, date, minutes]);
 
   const hasAnyFree = slots.some((s) => s.available);
   // เต็มเพราะเลยเวลาล้วนๆ — บอกให้เลือกวันอื่นดีกว่าบอกว่า "คิวเต็ม"
@@ -119,6 +124,7 @@ export default function BookingForm({
         customerName: customerName.trim(),
         phone: phone.trim(),
         bookingTime: bookingTime.toISOString(),
+        durationMinutes: minutes,
         notes: notes.trim() || undefined,
       });
       if (data.ok) {
@@ -209,20 +215,45 @@ export default function BookingForm({
           <select
             id="service"
             value={serviceId}
-            onChange={(e) => setServiceId(e.target.value)}
+            onChange={(e) => {
+              setServiceId(e.target.value);
+              setMinutes(
+                services.find((s) => s.id === e.target.value)?.durationMinutes ?? minutes
+              );
+            }}
             className={inputClass}
             required
           >
             {services.length === 0 && <option value="">—</option>}
             {services.map((s) => (
               <option key={s.id} value={s.id}>
-                {localizeName(s)} · {s.durationMinutes} min · {s.price} €
+                {localizeName(s)}
               </option>
             ))}
           </select>
           {selected && (
             <p className="mt-2 text-sm text-bark/55">{localizeDesc(selected)}</p>
           )}
+        </div>
+
+        {/* ระยะเวลา (60/90/120 นาที ตาม price list) */}
+        <div>
+          <label htmlFor="length" className={labelClass}>
+            {t("f_length")} <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="length"
+            value={minutes}
+            onChange={(e) => setMinutes(Number(e.target.value))}
+            className={inputClass}
+            required
+          >
+            {lengths.map((o) => (
+              <option key={o.minutes} value={o.minutes}>
+                {o.minutes} min · {o.price} €
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* วันที่ + เวลา */}

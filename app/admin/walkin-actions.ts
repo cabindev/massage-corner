@@ -5,12 +5,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { overlapWhere } from "@/lib/availability";
 import { requireAdminAction } from "@/lib/auth";
+import { pickDuration } from "@/lib/price-tiers";
 
 export type WalkinInput = {
   serviceId: string;
   customerName: string;
   phone?: string;
   dateTime: string; // ISO
+  durationMinutes?: number; // ไม่ส่ง = ระยะเวลาหลักของบริการ
   therapistId?: string | null;
 };
 
@@ -48,14 +50,19 @@ export async function createWalkin(input: WalkinInput): Promise<WalkinResult> {
       async (tx) => {
         const service = await tx.service.findUnique({
           where: { id: serviceId },
-          select: { durationMinutes: true, isActive: true },
+          select: { durationMinutes: true, price: true, priceTiers: true, isActive: true },
         });
         if (!service || !service.isActive)
           throw new WalkinError("Service not found or inactive.");
 
-        const end = new Date(
-          start.getTime() + service.durationMinutes * 60_000
+        const option = pickDuration(
+          { ...service, price: Number(service.price) },
+          input.durationMinutes
         );
+        if (!option)
+          throw new WalkinError("That length isn't offered for this service.");
+
+        const end = new Date(start.getTime() + option.minutes * 60_000);
 
         const activeTherapists = await tx.therapist.count({
           where: { isActive: true },

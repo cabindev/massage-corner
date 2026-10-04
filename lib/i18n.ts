@@ -95,6 +95,7 @@ export const dict = {
       "Choose a service, date and time that suits you, then fill in your contact details. Our team will confirm your booking.",
 
     f_service: "Service",
+    f_length: "Duration",
     f_date: "Date",
     f_time: "Time",
     f_name: "Full Name",
@@ -226,6 +227,7 @@ export const dict = {
       "Изберете услуга, дата и час, които ви устройват, след което попълнете данните си за контакт. Нашият екип ще потвърди резервацията.",
 
     f_service: "Услуга",
+    f_length: "Продължителност",
     f_date: "Дата",
     f_time: "Час",
     f_name: "Име и фамилия",

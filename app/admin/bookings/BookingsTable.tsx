@@ -9,6 +9,7 @@ import BookingFormModal, {
   emptyInitial,
   initialFromBooking,
   type BookingFormInitial,
+  type ModalService,
 } from "./BookingFormModal";
 
 type Status = "PENDING" | "CONFIRMED" | "REJECTED" | "COMPLETED" | "CANCELLED";
@@ -26,7 +27,7 @@ export type BookingRow = {
   notes: string | null;
 };
 type Therapist = { id: string; name: string };
-type Service = { id: string; name: string; durationMinutes: number; price: number };
+type Service = ModalService;
 
 const ST: Record<Status, { label: string; cls: string }> = {
   PENDING: { label: "Pending", cls: "bg-amber-100 text-amber-700 ring-amber-200" },

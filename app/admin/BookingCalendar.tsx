@@ -12,6 +12,7 @@ import {
 } from "@/lib/schedule-config";
 import { therapistColor } from "@/lib/therapist-color";
 import { createWalkin } from "./walkin-actions";
+import { durationOptions, type PriceTier } from "@/lib/price-tiers";
 
 export type CalendarBooking = {
   id: string;
@@ -28,6 +29,7 @@ export type ServiceLite = {
   name: string;
   durationMinutes: number;
   price: number;
+  priceTiers: PriceTier[] | null;
 };
 export type TherapistLite = { id: string; name: string };
 
@@ -77,6 +79,7 @@ export default function BookingCalendar({
   // ── walk-in form state ──
   const [walkTime, setWalkTime] = useState<string | null>(null); // "HH:MM"
   const [wService, setWService] = useState(services[0]?.id ?? "");
+  const [wMinutes, setWMinutes] = useState(services[0]?.durationMinutes ?? 60);
   const [wName, setWName] = useState("");
   const [wPhone, setWPhone] = useState("");
   const [wTherapist, setWTherapist] = useState("");
@@ -156,6 +159,7 @@ export default function BookingCalendar({
     setWPhone("");
     setWTherapist("");
     setWService(services[0]?.id ?? "");
+    setWMinutes(services[0]?.durationMinutes ?? 60);
     setWError(null);
   }
 
@@ -173,6 +177,7 @@ export default function BookingCalendar({
         customerName: wName.trim(),
         phone: wPhone.trim() || undefined,
         therapistId: wTherapist || null,
+        durationMinutes: wMinutes,
         dateTime: dt.toISOString(),
       });
       if (res.ok) {
@@ -185,6 +190,7 @@ export default function BookingCalendar({
   }
 
   const selSvc = services.find((s) => s.id === wService);
+  const wLengths = selSvc ? durationOptions(selSvc) : [];
   const fieldCls =
     "w-full rounded-xl bg-cream-50 px-3 py-2 text-sm text-bark ring-1 ring-leaf-100 outline-none focus:ring-2 focus:ring-leaf-500";
 
@@ -321,7 +327,7 @@ export default function BookingCalendar({
                   {selSvc ? ` – ${hhmm(
                     Number(walkTime.split(":")[0]) * 60 +
                       Number(walkTime.split(":")[1]) +
-                      selSvc.durationMinutes
+                      wMinutes
                   )}` : ""}
                 </p>
               </div>
@@ -331,9 +337,25 @@ export default function BookingCalendar({
             <div className="mt-5 space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-bark/60">Service</label>
-                <select value={wService} onChange={(e) => setWService(e.target.value)} className={fieldCls} required>
+                <select
+                  value={wService}
+                  onChange={(e) => {
+                    setWService(e.target.value);
+                    setWMinutes(services.find((s) => s.id === e.target.value)?.durationMinutes ?? wMinutes);
+                  }}
+                  className={fieldCls}
+                  required
+                >
                   {services.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name} · {s.durationMinutes}m · {s.price} €</option>
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-bark/60">Length</label>
+                <select value={wMinutes} onChange={(e) => setWMinutes(Number(e.target.value))} className={fieldCls} required>
+                  {wLengths.map((o) => (
+                    <option key={o.minutes} value={o.minutes}>{o.minutes} min · {o.price} €</option>
                   ))}
                 </select>
               </div>

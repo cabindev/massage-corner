@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { ACTIVE_BOOKING_STATUSES, overlapWhere } from "@/lib/availability";
 import { requireAdminAction } from "@/lib/auth";
 import type { BookingStatusValue } from "@/lib/admin-data";
+import { pickDuration } from "@/lib/price-tiers";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -15,6 +16,7 @@ export type BookingFormInput = {
   customerName: string;
   phone?: string;
   dateTime: string; // ISO
+  durationMinutes?: number; // ไม่ส่ง = ระยะเวลาหลักของบริการ
   therapistId?: string | null;
   notes?: string;
 };
@@ -32,17 +34,25 @@ async function assertSlotAndCompute(
   tx: Prisma.TransactionClient,
   serviceId: string,
   start: Date,
+  durationMinutes: number | undefined,
   therapistId: string | null,
   excludeBookingId: string | null
 ): Promise<Date> {
   const service = await tx.service.findUnique({
     where: { id: serviceId },
-    select: { durationMinutes: true, isActive: true },
+    select: { durationMinutes: true, price: true, priceTiers: true, isActive: true },
   });
   if (!service || !service.isActive)
     throw new BookingFormError("Service not found or inactive.");
 
-  const end = new Date(start.getTime() + service.durationMinutes * 60_000);
+  const option = pickDuration(
+    { ...service, price: Number(service.price) },
+    durationMinutes
+  );
+  if (!option)
+    throw new BookingFormError("That length isn't offered for this service.");
+
+  const end = new Date(start.getTime() + option.minutes * 60_000);
 
   const activeTherapists = await tx.therapist.count({
     where: { isActive: true },
@@ -90,7 +100,9 @@ function parseForm(input: BookingFormInput) {
     throw new BookingFormError("Please fill in service, name and time.");
   const start = new Date(input.dateTime);
   if (isNaN(start.getTime())) throw new BookingFormError("Invalid date/time.");
-  return { serviceId, customerName, phone, therapistId, notes, start };
+  const durationMinutes =
+    typeof input.durationMinutes === "number" ? input.durationMinutes : undefined;
+  return { serviceId, customerName, phone, therapistId, notes, start, durationMinutes };
 }
 
 function formError(err: unknown, ctx: string): { ok: false; message: string } {
@@ -119,6 +131,7 @@ export async function createBookingAdmin(
           tx,
           f.serviceId,
           f.start,
+          f.durationMinutes,
           f.therapistId,
           null
         );
@@ -164,6 +177,7 @@ export async function updateBooking(
           tx,
           f.serviceId,
           f.start,
+          f.durationMinutes,
           f.therapistId,
           id
         );

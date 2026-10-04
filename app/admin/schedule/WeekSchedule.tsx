@@ -145,6 +145,7 @@ export default function WeekSchedule({
       id: b.id,
       initial: initialFromBooking({
         serviceId: b.serviceId,
+        durationMinutes: b.durationMinutes,
         customerName: b.customerName,
         phone: b.phone,
         bookingTimeISO: b.start,

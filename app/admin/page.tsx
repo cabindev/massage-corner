@@ -138,6 +138,7 @@ export default async function AdminDashboardPage() {
     name: s.name,
     durationMinutes: s.durationMinutes,
     price: s.price,
+    priceTiers: s.priceTiers,
   }));
   const calendarTherapists = therapists.map((t) => ({ id: t.id, name: t.name }));
   const stats = buildStats(bookings);

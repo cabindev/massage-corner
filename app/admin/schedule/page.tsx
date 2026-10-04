@@ -46,6 +46,7 @@ export default async function AdminSchedulePage() {
           name: s.name,
           durationMinutes: s.durationMinutes,
           price: s.price,
+          priceTiers: s.priceTiers,
         }))}
       />
     </div>

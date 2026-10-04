@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { priceForDuration } from "@/lib/price-tiers";
 import {
   SHOP_TIMEZONE,
   sofiaDateKey,
@@ -39,26 +40,39 @@ export async function getBookings(): Promise<AdminBooking[]> {
     const rows = await prisma.booking.findMany({
       orderBy: { bookingTime: "desc" }, // ล่าสุด/อนาคตขึ้นก่อน (ของปัจจุบันอยู่บน)
       include: {
-        service: { select: { name: true, price: true, durationMinutes: true } },
+        service: {
+          select: { name: true, price: true, durationMinutes: true, priceTiers: true },
+        },
         therapist: { select: { id: true, name: true } },
       },
     });
-    return rows.map((b) => ({
-      id: b.id,
-      customerName: b.customerName,
-      phone: b.phone,
-      bookingTime: b.bookingTime,
-      endTime: b.endTime,
-      status: b.status as BookingStatusValue,
-      notes: b.notes,
-      serviceId: b.serviceId,
-      serviceName: b.service?.name ?? "—",
-      price: b.service ? Number(b.service.price) : 0,
-      durationMinutes: b.service?.durationMinutes ?? 0,
-      therapistId: b.therapist?.id ?? null,
-      therapistName: b.therapist?.name ?? null,
-      createdAt: b.createdAt,
-    }));
+    return rows.map((b) => {
+      // ระยะเวลาจริงของคิว = endTime − bookingTime (เลือก 60/90/120 ได้ ไม่ใช่ค่าคงที่ของบริการ)
+      const durationMinutes = Math.round(
+        (b.endTime.getTime() - b.bookingTime.getTime()) / 60_000
+      );
+      return {
+        id: b.id,
+        customerName: b.customerName,
+        phone: b.phone,
+        bookingTime: b.bookingTime,
+        endTime: b.endTime,
+        status: b.status as BookingStatusValue,
+        notes: b.notes,
+        serviceId: b.serviceId,
+        serviceName: b.service?.name ?? "—",
+        price: b.service
+          ? priceForDuration(
+              { ...b.service, price: Number(b.service.price) },
+              durationMinutes
+            )
+          : 0,
+        durationMinutes,
+        therapistId: b.therapist?.id ?? null,
+        therapistName: b.therapist?.name ?? null,
+        createdAt: b.createdAt,
+      };
+    });
   } catch {
     return [];
   }

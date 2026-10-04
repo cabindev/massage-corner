@@ -43,6 +43,7 @@ export default async function AdminBookingsPage() {
           name: s.name,
           durationMinutes: s.durationMinutes,
           price: s.price,
+          priceTiers: s.priceTiers,
         }))}
       />
     </div>
