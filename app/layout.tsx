@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+// ฟอนต์เก็บไว้ในโปรเจกต์ (fontsource) — ไม่ดึงจาก Google ตอน build
+// next/font/google ของ Turbopack พังบน build server ("queries have exactly one entry")
+import "@fontsource-variable/inter";
+import "@fontsource-variable/cormorant-garamond";
+import "@fontsource-variable/cormorant-garamond/wght-italic.css";
 import "./globals.css";
 import Providers from "./components/Providers";
 import I18nProvider from "./components/I18nProvider";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
-});
 
 export const metadata: Metadata = {
   title: "Massage Corner Sofia | Authentic Thai Massage & Spa",
@@ -32,7 +23,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${cormorant.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col font-sans">
         <Providers>

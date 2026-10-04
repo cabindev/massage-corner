@@ -44,9 +44,9 @@
   --color-bark: #121c18;
 
   /* ฟอนต์: เนื้อหา = Inter, หัวเรื่องหรู = Cormorant Garamond */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
-  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cormorant Garamond Variable", "Cormorant Garamond", Georgia, serif;
 }
 
 html {
