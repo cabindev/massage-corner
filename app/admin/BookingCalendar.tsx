@@ -9,6 +9,7 @@ import {
   sofiaDateTimeToUTC,
   sofiaDateKey,
   sofiaHHMM,
+  worksOnDateKey,
 } from "@/lib/schedule-config";
 import { therapistColor } from "@/lib/therapist-color";
 import { createWalkin } from "./walkin-actions";
@@ -31,7 +32,7 @@ export type ServiceLite = {
   price: number;
   priceTiers: PriceTier[] | null;
 };
-export type TherapistLite = { id: string; name: string };
+export type TherapistLite = { id: string; name: string; workDays: number[] };
 
 const ST: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Pending", cls: "bg-amber-100 text-amber-700" },
@@ -58,12 +59,10 @@ type Parsed = CalendarBooking & { startMs: number; endMs: number; key: string };
 
 export default function BookingCalendar({
   bookings,
-  therapistCount,
   services,
   therapists,
 }: {
   bookings: CalendarBooking[];
-  therapistCount: number;
   services: ServiceLite[];
   therapists: TherapistLite[];
 }) {
@@ -114,6 +113,10 @@ export default function BookingCalendar({
 
   const todayKey = sofiaDateKey(today);
   const [sy, sm, sd] = selected.split("-").map(Number);
+
+  // capacity ของวันที่เลือก = หมอที่เข้างานวันนั้น
+  const onDuty = therapists.filter((t) => worksOnDateKey(t.workDays, selected));
+  const therapistCount = onDuty.length;
 
   const dayBookings = parsed
     .filter((b) => b.key === selected)
@@ -373,7 +376,7 @@ export default function BookingCalendar({
                 <label className="mb-1 block text-xs font-medium text-bark/60">Therapist (optional)</label>
                 <select value={wTherapist} onChange={(e) => setWTherapist(e.target.value)} className={fieldCls}>
                   <option value="">— Assign later —</option>
-                  {therapists.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                  {onDuty.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
                 </select>
               </div>
             </div>

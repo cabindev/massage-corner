@@ -40,7 +40,11 @@ export default async function AdminSchedulePage() {
       </header>
       <WeekSchedule
         bookings={data}
-        therapists={therapists.map((t) => ({ id: t.id, name: t.name }))}
+        therapists={therapists.map((t) => ({
+          id: t.id,
+          name: t.name,
+          workDays: t.workDays,
+        }))}
         services={services.map((s) => ({
           id: s.id,
           name: s.name,

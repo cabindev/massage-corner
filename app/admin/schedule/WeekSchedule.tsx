@@ -3,7 +3,12 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { therapistColor } from "@/lib/therapist-color";
-import { sofiaDateTimeToUTC, sofiaHHMM, sofiaDateKey } from "@/lib/schedule-config";
+import {
+  sofiaDateTimeToUTC,
+  sofiaHHMM,
+  sofiaDateKey,
+  worksOnDateKey,
+} from "@/lib/schedule-config";
 import { moveBooking } from "./actions";
 import {
   createTherapist,
@@ -29,7 +34,8 @@ export type SchedBooking = {
   durationMinutes: number;
   status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "REJECTED";
 };
-type Lane = { id: string | null; name: string };
+/** workDays ไม่มี = แถว "Unassigned" (ไม่มีวันหยุด) */
+type Lane = { id: string | null; name: string; workDays?: number[] };
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -382,7 +388,7 @@ export default function WeekSchedule({
               <div key={lane.id ?? "null"} className="grid border-b border-leaf-50 last:border-0" style={{ gridTemplateColumns: "160px repeat(7, 1fr)" }}>
                 <div className="group flex items-center gap-2 px-4 py-3">
                   <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ background: c.base }} />
-                  {renameId === lane.id ? (
+                  {lane.id && renameId === lane.id ? (
                     <input
                       autoFocus
                       value={renameVal}
@@ -432,6 +438,8 @@ export default function WeekSchedule({
                   const cellKey = `${lane.id ?? "null"}-${di}`;
                   const items = grouped.get(key) ?? [];
                   const isOver = overKey === cellKey;
+                  // วันหยุดของหมอคนนี้ — ลากมาวางได้แต่ server จะปฏิเสธ
+                  const dayOff = !!lane.workDays && !worksOnDateKey(lane.workDays, dkey(d));
                   return (
                     <div
                       key={di}
@@ -442,9 +450,18 @@ export default function WeekSchedule({
                       onDragLeave={() => setOverKey((k) => (k === cellKey ? null : k))}
                       onDrop={() => onDrop(lane, d)}
                       className={`min-h-[72px] space-y-1 border-l border-leaf-50 p-1.5 transition ${
-                        isOver ? "bg-leaf-50 ring-1 ring-inset ring-leaf-300" : ""
+                        isOver
+                          ? "bg-leaf-50 ring-1 ring-inset ring-leaf-300"
+                          : dayOff
+                          ? "bg-bark/[0.04]"
+                          : ""
                       }`}
                     >
+                      {dayOff && (
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-bark/40">
+                          Day off
+                        </p>
+                      )}
                       {items.map((b) => {
                         const bc = therapistColor(b.therapistId);
                         return (

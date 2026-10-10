@@ -3,6 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
+  countTherapistsOnDuty,
   overlapWhere,
   getDayAvailability,
   type SlotInfo,
@@ -134,10 +135,8 @@ export async function createBooking(
           );
         }
 
-        // capacity = จำนวนหมอที่ยังรับงาน
-        const activeTherapists = await tx.therapist.count({
-          where: { isActive: true },
-        });
+        // capacity = จำนวนหมอที่เข้างานวันนั้น
+        const activeTherapists = await countTherapistsOnDuty(tx, startTime);
         if (activeTherapists === 0) {
           throw new BookingError(
             "Sorry, no therapist is currently available."

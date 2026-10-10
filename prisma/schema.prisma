@@ -58,6 +58,7 @@ model Therapist {
   bio       String? // ประวัติ/ความถนัดสั้น ๆ
   imageUrl  String? // รูปภาพ
   isActive  Boolean   @default(true) // ยังรับงานอยู่หรือไม่ (นับเป็น capacity เฉพาะที่ active)
+  workDays  String    @default("0,1,2,3,4,5,6") @db.VarChar(20) // วันที่เข้างาน (0=อาทิตย์ … 6=เสาร์) — นับเป็น capacity เฉพาะวันที่เข้างาน
   bookings  Booking[] // ความสัมพันธ์: 1 หมอมีได้หลายการจอง
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

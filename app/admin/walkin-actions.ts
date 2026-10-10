@@ -3,7 +3,11 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { overlapWhere } from "@/lib/availability";
+import {
+  countTherapistsOnDuty,
+  overlapWhere,
+  therapistUnavailableReason,
+} from "@/lib/availability";
 import { requireAdminAction } from "@/lib/auth";
 import { pickDuration } from "@/lib/price-tiers";
 
@@ -64,11 +68,9 @@ export async function createWalkin(input: WalkinInput): Promise<WalkinResult> {
 
         const end = new Date(start.getTime() + option.minutes * 60_000);
 
-        const activeTherapists = await tx.therapist.count({
-          where: { isActive: true },
-        });
+        const activeTherapists = await countTherapistsOnDuty(tx, start);
         if (activeTherapists === 0)
-          throw new WalkinError("No active therapists.");
+          throw new WalkinError("No therapist works on this day.");
 
         const overlapping = await tx.booking.count({
           where: overlapWhere(start, end),
@@ -77,12 +79,8 @@ export async function createWalkin(input: WalkinInput): Promise<WalkinResult> {
           throw new WalkinError("This time slot is fully booked.");
 
         if (therapistId) {
-          const th = await tx.therapist.findUnique({
-            where: { id: therapistId },
-            select: { isActive: true },
-          });
-          if (!th || !th.isActive)
-            throw new WalkinError("Selected therapist is unavailable.");
+          const why = await therapistUnavailableReason(tx, therapistId, start);
+          if (why) throw new WalkinError(why);
           const clash = await tx.booking.count({
             where: {
               therapistId,

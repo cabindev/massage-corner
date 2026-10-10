@@ -13,8 +13,8 @@ export default async function AdminTherapistsPage() {
           Therapists
         </h1>
         <p className="mt-1 text-sm text-bark/68">
-          Add, rename, or remove therapists. Active therapists set the booking
-          capacity.
+          Add, rename, or remove therapists, and pick the days each one works.
+          Capacity on a day = active therapists who work that day.
         </p>
       </header>
       <TherapistManager therapists={therapists} />

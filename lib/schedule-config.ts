@@ -8,6 +8,9 @@ export const LAST_SLOT_MINUTES = 18 * 60;
 
 export const SHOP_TIMEZONE = "Europe/Sofia";
 
+/** วันที่ร้านปิด (0=อาทิตย์ … 6=เสาร์) — ปิดวันจันทร์ */
+export const CLOSED_WEEKDAY = 1;
+
 /**
  * ปิดวันจันทร์ — เปิดทำการอังคาร–อาทิตย์ นับตาม "ปฏิทินเวลาร้าน" (Europe/Sofia)
  * ไม่ใช่โซนเวลาของเครื่องที่รันโค้ด
@@ -19,7 +22,7 @@ export function isClosedDay(date: Date): boolean {
 /** เหมือน isClosedDay แต่รับวันที่เป็น "YYYY-MM-DD" ตรงๆ (ไม่ต้องแปลงกลับไปกลับมา) */
 export function isClosedDateKey(dateStr: string): boolean {
   // ใช้เที่ยงวัน UTC เป็นตัวแทนของวันนั้น — กัน off-by-one ตอนสลับ DST
-  return new Date(`${dateStr}T12:00:00.000Z`).getUTCDay() === 1; // Sun=0, Mon=1, ...
+  return weekdayOfDateKey(dateStr) === CLOSED_WEEKDAY;
 }
 
 /**
@@ -68,4 +71,32 @@ export function sofiaDateKey(date: Date): string {
 /** เที่ยงคืนของ "วันนี้ตามเวลาร้าน" (Europe/Sofia) แสดงเป็น Date/instant ที่ถูกต้อง */
 export function sofiaStartOfDay(date: Date): Date {
   return sofiaDateTimeToUTC(sofiaDateKey(date), "00:00");
+}
+
+// ─── วันเข้างานของหมอ (Therapist.workDays) ─────────────────────
+// เก็บเป็น "0,1,2,…" (0=อาทิตย์ … 6=เสาร์ ตาม getUTCDay) — หมอนับเป็น capacity
+// เฉพาะวันที่เข้างาน เช่น วันธรรมดามี 2 คน แต่เสาร์–อาทิตย์มีคนเดียว
+
+/** ลำดับวันที่แสดงในหลังบ้าน (เริ่มวันจันทร์) */
+export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
+export const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** "0,2,6" → [0,2,6] (ทิ้งค่าที่ไม่ใช่ 0–6 / ซ้ำ) */
+export function parseWorkDays(s: string | null | undefined): number[] {
+  const out = new Set<number>();
+  for (const part of (s ?? "").split(",")) {
+    const n = Number(part.trim());
+    if (part.trim() !== "" && Number.isInteger(n) && n >= 0 && n <= 6) out.add(n);
+  }
+  return [...out].sort((a, b) => a - b);
+}
+
+/** วันในสัปดาห์ (0=อาทิตย์) ของ "YYYY-MM-DD" ตามปฏิทินร้าน */
+export function weekdayOfDateKey(dateStr: string): number {
+  return new Date(`${dateStr}T12:00:00.000Z`).getUTCDay();
+}
+
+/** หมอเข้างานวันนั้นหรือไม่ */
+export function worksOnDateKey(workDays: number[], dateStr: string): boolean {
+  return workDays.includes(weekdayOfDateKey(dateStr));
 }

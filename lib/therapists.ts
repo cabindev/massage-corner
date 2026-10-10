@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { parseWorkDays } from "@/lib/schedule-config";
 
 export type TherapistDTO = {
   id: string;
   name: string;
   isActive: boolean;
+  /** วันที่เข้างาน 0=อาทิตย์ … 6=เสาร์ */
+  workDays: number[];
 };
 
 /** หมอนวดพร้อมข้อมูลจัดการ (รวมจำนวนคิวที่กำลังจะถึง) */
@@ -12,6 +15,7 @@ export type TherapistAdmin = {
   name: string;
   bio: string | null;
   isActive: boolean;
+  workDays: number[];
   upcomingCount: number;
 };
 
@@ -21,9 +25,9 @@ export async function getActiveTherapists(): Promise<TherapistDTO[]> {
     const rows = await prisma.therapist.findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },
-      select: { id: true, name: true, isActive: true },
+      select: { id: true, name: true, isActive: true, workDays: true },
     });
-    return rows;
+    return rows.map((t) => ({ ...t, workDays: parseWorkDays(t.workDays) }));
   } catch {
     return [];
   }
@@ -40,6 +44,7 @@ export async function getAllTherapists(): Promise<TherapistAdmin[]> {
         name: true,
         bio: true,
         isActive: true,
+        workDays: true,
         _count: {
           select: {
             bookings: {
@@ -57,6 +62,7 @@ export async function getAllTherapists(): Promise<TherapistAdmin[]> {
       name: t.name,
       bio: t.bio,
       isActive: t.isActive,
+      workDays: parseWorkDays(t.workDays),
       upcomingCount: t._count.bookings,
     }));
   } catch {

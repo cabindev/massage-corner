@@ -3,7 +3,12 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { ACTIVE_BOOKING_STATUSES, overlapWhere } from "@/lib/availability";
+import {
+  ACTIVE_BOOKING_STATUSES,
+  countTherapistsOnDuty,
+  overlapWhere,
+  therapistUnavailableReason,
+} from "@/lib/availability";
 import { requireAdminAction } from "@/lib/auth";
 import type { BookingStatusValue } from "@/lib/admin-data";
 import { pickDuration } from "@/lib/price-tiers";
@@ -54,11 +59,9 @@ async function assertSlotAndCompute(
 
   const end = new Date(start.getTime() + option.minutes * 60_000);
 
-  const activeTherapists = await tx.therapist.count({
-    where: { isActive: true },
-  });
+  const activeTherapists = await countTherapistsOnDuty(tx, start);
   if (activeTherapists === 0)
-    throw new BookingFormError("No active therapists.");
+    throw new BookingFormError("No therapist works on this day.");
 
   const overlap = await tx.booking.count({
     where: excludeBookingId
@@ -69,12 +72,8 @@ async function assertSlotAndCompute(
     throw new BookingFormError("That time slot is fully booked.");
 
   if (therapistId) {
-    const th = await tx.therapist.findUnique({
-      where: { id: therapistId },
-      select: { isActive: true },
-    });
-    if (!th || !th.isActive)
-      throw new BookingFormError("That therapist is unavailable.");
+    const why = await therapistUnavailableReason(tx, therapistId, start);
+    if (why) throw new BookingFormError(why);
     const clash = await tx.booking.count({
       where: {
         ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
@@ -296,13 +295,12 @@ export async function assignTherapist(
     if (!booking) return { ok: false, message: "Booking not found" };
 
     if (targetId) {
-      const therapist = await prisma.therapist.findUnique({
-        where: { id: targetId },
-        select: { isActive: true },
-      });
-      if (!therapist || !therapist.isActive) {
-        return { ok: false, message: "This therapist is unavailable" };
-      }
+      const why = await therapistUnavailableReason(
+        prisma,
+        targetId,
+        booking.bookingTime
+      );
+      if (why) return { ok: false, message: why };
 
       // หมอคนนี้ติดคิวอื่นที่เวลาทับกันหรือไม่ (ไม่นับรายการนี้เอง)
       const clash = await prisma.booking.count({

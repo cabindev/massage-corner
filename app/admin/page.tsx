@@ -140,7 +140,11 @@ export default async function AdminDashboardPage() {
     price: s.price,
     priceTiers: s.priceTiers,
   }));
-  const calendarTherapists = therapists.map((t) => ({ id: t.id, name: t.name }));
+  const calendarTherapists = therapists.map((t) => ({
+    id: t.id,
+    name: t.name,
+    workDays: t.workDays,
+  }));
   const stats = buildStats(bookings);
   const name = session?.user?.name ?? "Administrator";
 
@@ -248,7 +252,6 @@ export default async function AdminDashboardPage() {
           >
             <BookingCalendar
               bookings={calendarBookings}
-              therapistCount={therapists.length}
               services={calendarServices}
               therapists={calendarTherapists}
             />

@@ -4,11 +4,20 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { TherapistAdmin } from "@/lib/therapists";
 import {
+  CLOSED_WEEKDAY,
+  WEEKDAY_ORDER,
+  WEEKDAY_SHORT,
+} from "@/lib/schedule-config";
+import {
   createTherapist,
   renameTherapist,
   setTherapistActive,
+  setTherapistWorkDays,
   deleteTherapist,
 } from "./actions";
+
+/** วันที่ร้านเปิด เรียงจันทร์→อาทิตย์ (วันปิดร้านไม่ต้องให้เลือก) */
+const OPEN_WEEKDAYS = WEEKDAY_ORDER.filter((d) => d !== CLOSED_WEEKDAY);
 
 export default function TherapistManager({
   therapists,
@@ -147,6 +156,42 @@ export default function TherapistManager({
                   {t.bio && editingId !== t.id && (
                     <p className="truncate text-xs text-bark/62">{t.bio}</p>
                   )}
+                  {/* วันเข้างาน — กดเพื่อเปิด/ปิดทีละวัน */}
+                  <div
+                    className="mt-2 flex flex-wrap gap-1"
+                    role="group"
+                    aria-label={`${t.name} work days`}
+                  >
+                    {OPEN_WEEKDAYS.map((d) => {
+                      const on = t.workDays.includes(d);
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          aria-pressed={on}
+                          disabled={pending}
+                          onClick={() =>
+                            run(() =>
+                              setTherapistWorkDays(
+                                t.id,
+                                on
+                                  ? t.workDays.filter((x) => x !== d)
+                                  : [...t.workDays, d]
+                              )
+                            )
+                          }
+                          title={on ? `Works ${WEEKDAY_SHORT[d]} — click to set day off` : `Off ${WEEKDAY_SHORT[d]} — click to set working`}
+                          className={`rounded-md px-2 py-1 text-[11px] font-medium ring-1 transition disabled:opacity-60 ${
+                            on
+                              ? "bg-leaf-600 text-white ring-leaf-600 hover:bg-leaf-700"
+                              : "bg-white text-bark/52 ring-leaf-100 hover:bg-cream-50"
+                          }`}
+                        >
+                          {WEEKDAY_SHORT[d]}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* upcoming count */}

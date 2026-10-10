@@ -3,7 +3,11 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { overlapWhere } from "@/lib/availability";
+import {
+  countTherapistsOnDuty,
+  overlapWhere,
+  therapistUnavailableReason,
+} from "@/lib/availability";
 import { requireAdminAction } from "@/lib/auth";
 
 export type MoveResult = { ok: true } | { ok: false; message: string };
@@ -39,9 +43,7 @@ export async function moveBooking(
         const duration = b.endTime.getTime() - b.bookingTime.getTime();
         const newEnd = new Date(newStart.getTime() + duration);
 
-        const activeTherapists = await tx.therapist.count({
-          where: { isActive: true },
-        });
+        const activeTherapists = await countTherapistsOnDuty(tx, newStart);
         const overlap = await tx.booking.count({
           where: { id: { not: id }, ...overlapWhere(newStart, newEnd) },
         });
@@ -49,12 +51,8 @@ export async function moveBooking(
           throw new MoveError("That time is fully booked.");
 
         if (tid) {
-          const th = await tx.therapist.findUnique({
-            where: { id: tid },
-            select: { isActive: true },
-          });
-          if (!th || !th.isActive)
-            throw new MoveError("That therapist is unavailable.");
+          const why = await therapistUnavailableReason(tx, tid, newStart);
+          if (why) throw new MoveError(why);
           const clash = await tx.booking.count({
             where: {
               id: { not: id },

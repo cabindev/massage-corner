@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAction } from "@/lib/auth";
+import { parseWorkDays } from "@/lib/schedule-config";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -10,6 +11,7 @@ function revalidateAll() {
   revalidatePath("/admin/therapists");
   revalidatePath("/admin");
   revalidatePath("/admin/bookings");
+  revalidatePath("/admin/schedule");
 }
 
 function cleanName(name: string) {
@@ -75,6 +77,33 @@ export async function setTherapistActive(
       return { ok: false, message: "Not authorized. Please sign in." };
     console.error("[setTherapistActive]", err);
     return { ok: false, message: "Could not update therapist" };
+  }
+}
+
+/**
+ * ตั้งวันที่หมอเข้างาน (0=อาทิตย์ … 6=เสาร์) — capacity ของแต่ละวันนับเฉพาะหมอที่เข้างาน
+ * คิวที่จัดให้หมอไว้แล้วในวันที่ถูกเอาออกจะไม่ถูกแตะ — แอดมินย้ายเองจากหน้า schedule
+ */
+export async function setTherapistWorkDays(
+  id: string,
+  days: number[]
+): Promise<ActionResult> {
+  if (!id?.trim() || !Array.isArray(days))
+    return { ok: false, message: "Invalid data" };
+  const clean = parseWorkDays(days.join(","));
+  try {
+    await requireAdminAction();
+    await prisma.therapist.update({
+      where: { id },
+      data: { workDays: clean.join(",") },
+    });
+    revalidateAll();
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof Error && err.message === "UNAUTHORIZED")
+      return { ok: false, message: "Not authorized. Please sign in." };
+    console.error("[setTherapistWorkDays]", err);
+    return { ok: false, message: "Could not update work days" };
   }
 }
 
