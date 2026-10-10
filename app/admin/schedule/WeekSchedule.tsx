@@ -362,7 +362,7 @@ export default function WeekSchedule({
       <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-leaf-100">
         <div className="min-w-[920px]">
           {/* header */}
-          <div className="grid border-b border-leaf-100" style={{ gridTemplateColumns: "160px repeat(7, 1fr)" }}>
+          <div className="grid border-b border-leaf-100" style={{ gridTemplateColumns: "160px repeat(7, minmax(0, 1fr))" }}>
             <div className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-bark/58">
               Therapist
             </div>
@@ -385,7 +385,7 @@ export default function WeekSchedule({
           {lanes.map((lane) => {
             const c = therapistColor(lane.id);
             return (
-              <div key={lane.id ?? "null"} className="grid border-b border-leaf-50 last:border-0" style={{ gridTemplateColumns: "160px repeat(7, 1fr)" }}>
+              <div key={lane.id ?? "null"} className="grid border-b border-leaf-50 last:border-0" style={{ gridTemplateColumns: "160px repeat(7, minmax(0, 1fr))" }}>
                 <div className="group flex items-center gap-2 px-4 py-3">
                   <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ background: c.base }} />
                   {lane.id && renameId === lane.id ? (
@@ -449,7 +449,7 @@ export default function WeekSchedule({
                       }}
                       onDragLeave={() => setOverKey((k) => (k === cellKey ? null : k))}
                       onDrop={() => onDrop(lane, d)}
-                      className={`min-h-[72px] space-y-1 border-l border-leaf-50 p-1.5 transition ${
+                      className={`min-h-[72px] min-w-0 space-y-1 border-l border-leaf-50 p-1.5 transition ${
                         isOver
                           ? "bg-leaf-50 ring-1 ring-inset ring-leaf-300"
                           : dayOff
@@ -483,9 +483,11 @@ export default function WeekSchedule({
                               className="mt-[3px] inline-block h-2 w-2 shrink-0 rounded-full"
                               style={{ background: bc.base }}
                             />
-                            <span className="min-w-0">
-                              <span className="numeral font-semibold">{sofiaHHMM(b.s)}</span>{" "}
-                              <span className="font-medium">{b.customerName}</span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate">
+                                <span className="numeral font-semibold">{sofiaHHMM(b.s)}</span>{" "}
+                                <span className="font-medium">{b.customerName}</span>
+                              </span>
                               <span className="block truncate text-bark/68">
                                 {b.serviceName} · {b.durationMinutes}m
                               </span>
