@@ -56,6 +56,16 @@ const ICON = {
       strokeLinejoin="round"
     />
   ),
+  guide: (
+    <path
+      d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-2.5-11.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7m0 3h.01"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  ),
 };
 
 const NAV: NavItem[] = [
@@ -64,6 +74,7 @@ const NAV: NavItem[] = [
   { href: "/admin/bookings", label: "Bookings", icon: ICON.bookings },
   { href: "/admin/therapists", label: "Therapists", icon: ICON.therapists },
   { href: "/admin/services", label: "Services", icon: ICON.services },
+  { href: "/admin/guide", label: "Guide", icon: ICON.guide },
 ];
 
 export default function AdminSidebar({ userName }: { userName?: string | null }) {

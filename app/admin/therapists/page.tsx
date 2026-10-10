@@ -1,4 +1,5 @@
 import { getAllTherapists } from "@/lib/therapists";
+import Link from "next/link";
 import TherapistManager from "./TherapistManager";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,13 @@ export default async function AdminTherapistsPage() {
         </h1>
         <p className="mt-1 text-sm text-bark/68">
           Add, rename, or remove therapists, and pick the days each one works.
-          Capacity on a day = active therapists who work that day.
+          Capacity on a day = active therapists who work that day.{" "}
+          <Link
+            href="/admin/guide#work-days"
+            className="font-medium text-leaf-700 underline underline-offset-2"
+          >
+            How work days work
+          </Link>
         </p>
       </header>
       <TherapistManager therapists={therapists} />
