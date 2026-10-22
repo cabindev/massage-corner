@@ -65,7 +65,7 @@ const services = [
       "Reflexology and deep tissue work on the feet to stimulate energy flow throughout the entire body. Deeply relaxing and restorative.",
     descriptionBg:
       "Рефлексология и дълбока тъканна работа на краката за стимулиране на енергийния поток в цялото тяло.",
-    price: 50,
+    price: 60,
     durationMinutes: 60,
     imageUrl: "/images/services/foot.jpg",
   },
@@ -149,7 +149,9 @@ const TIERS = {
   ],
   "Foot Massage": [
     { minutes: 30, price: 40 },
-    { minutes: 60, price: 50 },
+    { minutes: 60, price: 60 },
+    { minutes: 90, price: 80 },
+    { minutes: 120, price: 100 },
   ],
   "Sport Massage": [
     { minutes: 60, price: 70 },
